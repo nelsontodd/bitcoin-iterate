@@ -46,6 +46,47 @@ struct bitcoin_transaction_input {
 	u32 sequence_number;
 };
 
+struct block {
+	u8 sha[SHA256_DIGEST_LENGTH];
+	s32 height; /* -1 for not-yet-known */
+	/* Where is it */
+	unsigned int filenum;
+	/* Position of first transaction */
+	off_t pos;
+	/* So we can iterate forwards. */
+	struct block *next;
+	/* Bitcoin block header. */
+	struct bitcoin_block bh;
+};
+
+struct utxo {
+	/* txid */
+	u8 tx[SHA256_DIGEST_LENGTH];
+
+	/* Timestamp. */
+	u32 timestamp;
+
+	/* Height. */
+	unsigned int height;
+
+	/* Number of outputs. */
+	u32 num_outputs;
+
+	/* Reference count for this tx. */
+	u32 unspent_outputs;
+
+        /* Total amount unspent. */
+        u64 unspent;
+  
+        /* Total amount spent. */
+        u64 spent;
+
+	/* Amount for each output. */
+	u64 amount[];
+  
+	/* Followed by a char per output for UNKNOWN/PAYMENT/CHANGE */
+};
+
 #define OP_PUSHDATA1	0x4C
 #define OP_PUSHDATA2	0x4D
 #define OP_PUSHDATA4	0x4E
