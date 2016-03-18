@@ -1,5 +1,3 @@
-/* GPLv2 or later, see LICENSE */
-
 #include <ccan/err/err.h>
 #include <ccan/tal/tal.h>
 #include <ccan/tal/path/path.h>
@@ -8,22 +6,13 @@
 /* #include <ccan/opt/opt.h> */
 /* #include <ccan/htable/htable_type.h> */
 /* #include <ccan/rbuf/rbuf.h> */
-/* #include <ccan/tal/str/str.h> */
-/* #include <ccan/str/hex/hex.h> */
-/* #include <ccan/tal/grab_file/grab_file.h> */
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <stdbool.h>
-/* #include <unistd.h> */
 #include <sys/stat.h>
-/* #include <fcntl.h> */
 #include <stdio.h>
-/* #include <assert.h> */
-/* #include <inttypes.h> */
-/* #include <errno.h> */
 #include "parse.h"
 #include "blockfiles.h"
-/* #include "io.h" */
 #include "dump.h"
 #include "space.h"
 #include "block.h"
@@ -294,7 +283,7 @@ void iterate(char *blockdir, char *cachedir,
       fprintf(stderr, ".");
 
     /* Don't read transactions if we don't have to */
-    if (!txfmt && !inputfmt && !outputfmt)
+    if (!txfmt && !inputfmt && !outputfmt && !utxofmt && !txfn && !inputfn && !outputfn && !utxofn)
       continue;
 
     /* If we haven't started and don't need to gather UTXO, skip */
@@ -344,7 +333,6 @@ void iterate(char *blockdir, char *cachedir,
 	  (*outputfn)(*b, *tx, tx[i].output[j]);
 	}
       }
-      
 
       if (needs_fee) {
 	/* Now we can release consumed utxos;
