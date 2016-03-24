@@ -3,11 +3,11 @@
 #include <ccan/err/err.h>
 #include <stdio.h>
 #include <inttypes.h>
-#include "dump.h"
+#include "format.h"
 #include "calculations.h"
 #include "utxo.h"
 
-void print_hash(const u8 *hash)
+static void print_hash(const u8 *hash)
 {
 char str[hex_str_size(SHA256_DIGEST_LENGTH)];
 
@@ -15,7 +15,7 @@ hex_encode(hash, SHA256_DIGEST_LENGTH, str, sizeof(str));
 fputs(str, stdout);
 }
 
-void print_hex(const void *data, size_t len)
+static void print_hex(const void *data, size_t len)
 {
   char str[len * 2 + 1];
 
@@ -65,7 +65,7 @@ static void print_le64(u64 v)
   print_hex(&l, sizeof(l));
 }
 
-void dump_tx_input(const struct bitcoin_transaction_input *input)
+static void dump_tx_input(const struct bitcoin_transaction_input *input)
 {
   print_hash(input->hash);
   print_le32(input->index);
@@ -74,14 +74,14 @@ void dump_tx_input(const struct bitcoin_transaction_input *input)
   print_le32(input->sequence_number);
 }
 
-void dump_tx_output(const struct bitcoin_transaction_output *output)
+static void dump_tx_output(const struct bitcoin_transaction_output *output)
 {
   print_le64(output->amount);
   print_varint(output->script_length);
   print_hex(output->script, output->script_length);
 }
 
-void dump_tx(const struct bitcoin_transaction *tx)
+static void dump_tx(const struct bitcoin_transaction *tx)
 {
   varint_t i;
 
@@ -95,7 +95,7 @@ void dump_tx(const struct bitcoin_transaction *tx)
   print_le32(tx->lock_time);
 }
 
-void dump_block_header(const struct bitcoin_block *b)
+static void dump_block_header(const struct bitcoin_block *b)
 {
   print_le32(b->version);
   print_hash(b->prev_hash);

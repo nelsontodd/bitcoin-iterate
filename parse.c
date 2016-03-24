@@ -153,8 +153,7 @@ bool next_block_header_prefix(struct file *f, off_t *off, const u32 marker)
 	return false;
 }
 
-bool
-read_bitcoin_block_header(struct bitcoin_block *block,
+bool read_bitcoin_block_header(struct bitcoin_block *block,
 			  struct file *f, off_t *off,
 			  u8 block_md[SHA256_DIGEST_LENGTH],
 			  const u32 marker)

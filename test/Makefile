@@ -1,0 +1,2 @@
+default:
+	./all_printables

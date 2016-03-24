@@ -1,15 +1,50 @@
+/*******************************************************************************
+ *
+ *  = cli.c
+ *
+ *  Entry point for the 'bitcoin-iterate' command-line program.
+ *
+ *  Format strings are set by command-line flags.  These format
+ *  strings are then used by data-structure-appropriate functions
+ *  which delegate to the `print_format` function.
+ *
+ *  UTXOs are only collected if certain format codes were specified.
+ *
+ */
 #include <ccan/err/err.h>
-#include <ccan/str/hex/hex.h>
-#include <ccan/tal/str/str.h>
 #include <ccan/opt/opt.h>
 #include "iterate.h"
+#include "utils.h"
+#include "format.h"
 
-static char *opt_set_hash(const char *arg, u8 *h)
+static char *blockfmt = NULL, *txfmt = NULL, *inputfmt = NULL, *outputfmt = NULL, *utxofmt = NULL;
+
+static void print_block(const struct utxo_map utxo_map, struct block *b)
 {
-  if (!hex_decode(arg, strlen(arg), h, SHA256_DIGEST_LENGTH))
-    return "Bad hex string (needs 64 hex chars)";
-  return NULL;
+  print_format(blockfmt, &utxo_map, b, NULL, 0, NULL, NULL, NULL);
 }
+static void print_transaction(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum)
+{
+  print_format(txfmt, &utxo_map, b, t, txnum, NULL, NULL, NULL);
+}
+static void print_input(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i)
+{
+  print_format(inputfmt, &utxo_map, b, t, txnum, i, NULL, NULL);
+}
+static void print_output(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o)
+{
+  print_format(outputfmt, &utxo_map, b, t, txnum, NULL, o, NULL);
+}
+static void print_utxo(const struct utxo_map utxo_map, struct block *b, struct utxo *u)
+{
+  print_format(utxofmt, &utxo_map, b, NULL, 0, NULL, NULL, u);
+}
+
+static block_function       blockfn  = &print_block;
+static transaction_function txfn     = &print_transaction;
+static input_function       inputfn  = &print_input;
+static output_function      outputfn = &print_output;
+static utxo_function        utxofn   = &print_utxo;
 
 int main(int argc, char *argv[])
 {
@@ -17,12 +52,11 @@ int main(int argc, char *argv[])
   bool use_testnet = false;
   unsigned long block_start = 0, block_end = -1UL;
   u8 tip[SHA256_DIGEST_LENGTH] = { 0 }, start_hash[SHA256_DIGEST_LENGTH] = { 0 };
+  bool needs_utxo = false;
   unsigned int utxo_period = 144;
   bool use_mmap = true;
   unsigned progress_marks = 0;
   bool quiet = false;
-  char *blockfmt = NULL, *txfmt = NULL,
-    *inputfmt = NULL, *outputfmt = NULL, *utxofmt = NULL;
 
   err_set_progname(argv[0]);
   opt_register_noarg("-h|--help", opt_usage_and_exit,
@@ -116,13 +150,34 @@ int main(int argc, char *argv[])
 
   if (argc != 1)
     opt_usage_and_exit(NULL);
-	
+
+  if (txfmt && strstr(txfmt, "%tF"))
+    needs_utxo = true;
+  if (txfmt && strstr(txfmt, "%tD"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%tF"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%tD"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%iB"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%ia"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%ip"))
+    needs_utxo = true;
+  if (outputfmt && strstr(outputfmt, "%tF"))
+    needs_utxo = true;
+  if (outputfmt && strstr(outputfmt, "%tD"))
+    needs_utxo = true;
+  if (utxofmt)
+    needs_utxo = true;
+  
   iterate(blockdir, cachedir,
 	  use_testnet,
 	  block_start, block_end, start_hash, tip,
-	  utxo_period, use_mmap,
+	  needs_utxo, utxo_period,
+	  use_mmap,
 	  progress_marks, quiet,
-	  blockfmt, txfmt, inputfmt, outputfmt, utxofmt,
-	  NULL,     NULL,  NULL,     NULL,      NULL);
+	  blockfn, txfn, inputfn, outputfn, utxofn);
   return 0;
 }

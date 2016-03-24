@@ -1,4 +1,4 @@
-ITERATE_OBJS := utils.o io.o blockfiles.o cli.o dump.o parse.o calculations.o utxo.o block.o cache.o iterate.o
+ITERATE_OBJS := utils.o io.o blockfiles.o cli.o format.o parse.o calculations.o utxo.o block.o cache.o iterate.o
 #CCAN_OBJS := ccan-asort.o ccan-breakpoint.o ccan-tal.o ccan-tal-path.o ccan-tal-str.o ccan-take.o ccan-list.o ccan-str.o ccan-opt-helpers.o ccan-opt.o ccan-opt-parse.o ccan-opt-usage.o ccan-htable.o ccan-rbuf.o
 CCAN_OBJS := ccan-tal.o ccan-tal-path.o ccan-tal-str.o ccan-take.o ccan-list.o ccan-str.o ccan-opt-helpers.o ccan-opt.o ccan-opt-parse.o ccan-opt-usage.o ccan-htable.o ccan-rbuf.o ccan-hex.o ccan-tal-grab-file.o ccan-noerr.o
 CCANDIR=ccan/
@@ -11,6 +11,7 @@ BIN_DIR := /usr/local/bin
 all: bitcoin-iterate doc/bitcoin-iterate.1
 
 .PHONY: install
+.PHONY: test
 
 install:
 	cp bitcoin-iterate $(BIN_DIR)/bitcoin-iterate
@@ -23,8 +24,8 @@ bitcoin-iterate: $(ITERATE_OBJS) $(CCAN_OBJS)
 doc/bitcoin-iterate.1: doc/bitcoin-iterate.1.txt
 	a2x --format=manpage $<
 
-check:
-	$(MAKE) -C test check
+test:
+	$(MAKE) -C test
 
 clean:
 	$(RM) bitcoin-iterate $(ITERATE_OBJS) $(CCAN_OBJS)

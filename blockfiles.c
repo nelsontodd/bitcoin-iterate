@@ -1,3 +1,5 @@
+#include <sys/mman.h>
+#include <ccan/tal/tal.h>
 #include <ccan/err/err.h>
 #include <ccan/tal/path/path.h>
 #include <ccan/tal/str/str.h>
@@ -8,6 +10,9 @@
 #include <dirent.h>
 #include "io.h"
 #include "blockfiles.h"
+#include "parse.h"
+
+#define CHUNK (128 * 1024 * 1024)
 
 static void add_name(char ***names_p, unsigned int num, char *name)
 {
@@ -94,3 +99,74 @@ struct file *block_file(char **block_fnames, unsigned int index, bool use_mmap)
     next = 0;
   return f + i;
 }
+
+size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_mmap, char **block_fnames, struct block_map *block_map, struct block **genesis)
+{
+  u32 netmarker;
+  if (use_testnet) {
+    netmarker = 0x0709110B;
+  } else {
+    netmarker = 0xD9B4BEF9;
+  }
+
+  off_t last_discard;
+  size_t i, block_count = 0;
+  struct block *b;
+  for (i = 0; i < tal_count(block_fnames); i++) {
+    off_t off = 0;
+
+    /* new-style starts from 1, old-style starts from 0 */
+    if (!block_fnames[i]) {
+      if (i)
+	warnx("Missing block info for %zu", i);
+      continue;
+    }
+
+    if (!quiet)
+      fprintf(stderr, "bitcoin-iterate: Processing %s (%zi/%zu files, %zi blocks)\n",
+	      block_fnames[i], i+1, tal_count(block_fnames), block_count);
+
+    last_discard = off = 0;
+    for (;;) {
+      off_t block_start;
+      struct file *f = block_file(block_fnames, i, use_mmap);
+
+      block_start = off;
+      if (!next_block_header_prefix(f, &off, netmarker)) {
+	if (off != block_start)
+	  warnx("Skipped %lu at end of %s",
+		off - block_start, block_fnames[i]);
+	break;
+      }
+      if (off != block_start)
+	warnx("Skipped %lu@%lu in %s",
+	      off - block_start, block_start,
+	      block_fnames[i]);
+
+      block_start = off;
+      b = tal(tal_ctx, struct block);
+      b->filenum = i;
+      b->height = -1;
+      if (!read_bitcoin_block_header(&b->bh, f, &off,
+				     b->sha, netmarker)) {
+	tal_free(b);
+	break;
+      }
+
+      b->pos = off;
+      add_block(block_map, b, &genesis, block_fnames);
+
+      skip_bitcoin_transactions(&b->bh, block_start, &off);
+      if (off > last_discard + CHUNK && f->mmap) {
+	size_t len = CHUNK;
+	if ((size_t)last_discard + len > f->len)
+	  len = f->len - last_discard;
+	madvise(f->mmap + last_discard, len,
+		MADV_DONTNEED);
+	last_discard += len;
+      }
+      block_count++;
+    }
+  }
+  return block_count;
+ }

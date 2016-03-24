@@ -1,12 +1,34 @@
+/*******************************************************************************
+ *
+ *  = types.h
+ *
+ *  Defines blockchain data structures.
+ *
+ */
 #ifndef BITCOIN_PARSE_TYPES_H
 #define BITCOIN_PARSE_TYPES_H
+#include <ccan/tal/tal.h>
 #include <ccan/short_types/short_types.h>
 #include <openssl/sha.h>
 
 /* We unpack varints for our in-memory representation */
 #define varint_t u64
 
-/* These are little endian on disk. */
+/**
+ * bitcoin_block - Block header
+ * @D9B4BEF9: Netmarker
+ * @len: Length of block in bytes
+ * @version: Bitcoin protocol version
+ * @prev_hash: Hash of previous (parent) block
+ * @merkle_hash: Hash of Merkle root for block's chain
+ * @timestamp: UNIX timestamp of block
+ * @target: Difficulty for block
+ * @nonce: Which solved block
+ * @transaction_count: Number of transactions in block
+ *
+ * Block headers are stored little-endian on disk.
+ *
+ */
 struct bitcoin_block {
 	u32 D9B4BEF9;
 	u32 len;
@@ -19,6 +41,18 @@ struct bitcoin_block {
 	varint_t transaction_count;
 };
 
+/**
+ * bitcoin_transaction - A single bitcoin transaction
+ * @version: Bitcoin protocol version
+ * @input_count: Number of inputs
+ * @input: Array of inputs
+ * @output_count: Number of outputs
+ * @output: Array of outputs
+ * @lock_time: Lock time for this transaction
+ * @sha256: Hash for this transaction
+ * @len: Length of this transaction in bytes
+ *
+ */
 struct bitcoin_transaction {
 	u32 version;
 	varint_t input_count;
@@ -32,14 +66,30 @@ struct bitcoin_transaction {
 	u32 len;
 };
 
+/**
+ * bitcoin_transaction_output - A single output from a particular bitcoin transaction
+ * @amount: The number of Satoshis for this output
+ * @script_length: The length of this output's script
+ * @script: This output's script
+ *
+ */
 struct bitcoin_transaction_output {
 	u64 amount;
 	varint_t script_length;
 	u8 *script;
 };
 
+/**
+ * bitcoin_transaction_input - A single input from a particular bitcoin transaction
+ * @hash: The hash of the transaction containing the output this input is spending
+ * @index: The index of the output in the transaction this input is spending
+ * @script_length: The length of this input's script
+ * @script: This input's script
+ * @sequence_number: This input's sequence number (not currently used)
+ *
+ */
 struct bitcoin_transaction_input {
-	u8 hash[32];
+	u8 hash[SHA256_DIGEST_LENGTH];
 	u32 index; /* output number referred to by above */
 	varint_t script_length;
 	u8 *script;
@@ -58,7 +108,7 @@ struct block {
 	/* Bitcoin block header. */
 	struct bitcoin_block bh;
 };
-
+ 
 struct utxo {
 	/* txid */
 	u8 tx[SHA256_DIGEST_LENGTH];
@@ -96,5 +146,14 @@ struct utxo {
 #define OP_EQUALVERIFY	0x88
 #define OP_CHECKSIG	0xAC
 #define OP_HASH160	0xA9
+
+#define UNKNOWN_OUTPUT 0
+#define PAYMENT_OUTPUT 1
+#define CHANGE_OUTPUT  2
+
+struct block *new_block();
+struct bitcoin_block *new_bitcoin_block();
+void free_block(const tal_t *block);
+void free_bitcoin_block(const tal_t *bitcoin_block);
 
 #endif /* BITCOIN_PARSE_TYPES_H */

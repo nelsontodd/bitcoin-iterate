@@ -1,0 +1,6 @@
+#!/bin/bash
+exec ../bitcoin-iterate --blockdir "$BITCOIN_ITERATE_BLOCK_DIR" --cache "$BITCOIN_ITERATE_CACHE_DIR" "$@" --block 'BLOCK %bN %bs %bl %bc' \
+                  --transaction 'TRANS %bN %tN %tt %tl %ti %to %tF %tD' \
+                  --input 'INPUT %bN %tN %iN %ii %il %ia %iB %ip' \
+                  --output 'OUTPUT %bN %tN %oN %ol %oa %oU' \
+                  --utxo 'UTXO %bN %ut %uc %uu %us %uU %uS %uC'

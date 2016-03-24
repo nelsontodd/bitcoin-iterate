@@ -1,4 +1,3 @@
-#include <ccan/tal/tal.h>
 #include <ccan/err/err.h>
 #include "block.h"
 #include "utils.h"
@@ -61,4 +60,3 @@ bool set_height(struct block_map *block_map, struct block *b)
   }
   return true;
 }
-

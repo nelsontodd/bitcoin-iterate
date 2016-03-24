@@ -22,8 +22,4 @@ void add_utxo(const tal_t *tal_ctx,
   
 void release_utxo(struct utxo_map *utxo_map, const struct bitcoin_transaction_input *i);
 
-#define UNKNOWN_OUTPUT 0
-#define PAYMENT_OUTPUT 1
-#define CHANGE_OUTPUT  2
-
 #endif /* BITCOIN_ITERATE_UTXO_H */

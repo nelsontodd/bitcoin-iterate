@@ -17,5 +17,6 @@
 
 bool is_zero(u8 hash[SHA256_DIGEST_LENGTH]);
 size_t hash_sha(const u8 *key);
+char *opt_set_hash(const char *arg, u8 *h);
 
 #endif /* BITCOIN_ITERATE_UTILS_H */
