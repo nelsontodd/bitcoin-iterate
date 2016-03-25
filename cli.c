@@ -19,32 +19,32 @@
 
 static char *blockfmt = NULL, *txfmt = NULL, *inputfmt = NULL, *outputfmt = NULL, *utxofmt = NULL;
 
-static void print_block(const struct utxo_map utxo_map, struct block *b)
+static void print_block(const struct utxo_map *utxo_map, struct block *b)
 {
-  print_format(blockfmt, &utxo_map, b, NULL, 0, NULL, NULL, NULL);
+  print_format(blockfmt, utxo_map, b, NULL, 0, NULL, NULL, NULL);
 }
-static void print_transaction(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum)
+static void print_transaction(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum)
 {
-  print_format(txfmt, &utxo_map, b, t, txnum, NULL, NULL, NULL);
+  print_format(txfmt, utxo_map, b, t, txnum, NULL, NULL, NULL);
 }
-static void print_input(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i)
+static void print_input(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i)
 {
-  print_format(inputfmt, &utxo_map, b, t, txnum, i, NULL, NULL);
+  print_format(inputfmt, utxo_map, b, t, txnum, i, NULL, NULL);
 }
-static void print_output(const struct utxo_map utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o)
+static void print_output(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o)
 {
-  print_format(outputfmt, &utxo_map, b, t, txnum, NULL, o, NULL);
+  print_format(outputfmt, utxo_map, b, t, txnum, NULL, o, NULL);
 }
-static void print_utxo(const struct utxo_map utxo_map, struct block *b, struct utxo *u)
+static void print_utxo(const struct utxo_map *utxo_map, struct block *b, struct utxo *u)
 {
-  print_format(utxofmt, &utxo_map, b, NULL, 0, NULL, NULL, u);
+  print_format(utxofmt, utxo_map, b, NULL, 0, NULL, NULL, u);
 }
 
-static block_function       blockfn  = &print_block;
-static transaction_function txfn     = &print_transaction;
-static input_function       inputfn  = &print_input;
-static output_function      outputfn = &print_output;
-static utxo_function        utxofn   = &print_utxo;
+/* static block_function       blockfn  = &print_block; */
+/* static transaction_function txfn     = &print_transaction; */
+/* static input_function       inputfn  = &print_input; */
+/* static output_function      outputfn = &print_output; */
+/* static utxo_function        utxofn   = &print_utxo; */
 
 int main(int argc, char *argv[])
 {
@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
 	  needs_utxo, utxo_period,
 	  use_mmap,
 	  progress_marks, quiet,
-	  blockfn, txfn, inputfn, outputfn, utxofn);
+	  /* blockfn, txfn, inputfn, outputfn, utxofn); */
+	  print_block, print_transaction, print_input, print_output, print_utxo);  
   return 0;
 }

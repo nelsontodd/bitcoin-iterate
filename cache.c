@@ -147,9 +147,6 @@ static size_t read_blockcache(const tal_t *tal_ctx,
   for (i = 0; i < num; i++)
     add_block(block_map, &b[i], genesis, block_fnames);
 
-  if (!*genesis)
-    errx(1, "Could not find a genesis block.");
-  
   return num;
 }
 
@@ -176,6 +173,8 @@ size_t read_blockchain(tal_t *tal_ctx,
 				    block_fnames,
 				    block_map, genesis);
     }
+    if (!*genesis)
+      errx(1, "Could not find a genesis block.");
   }
   if (blockcache) {
     write_blockcache(block_map, quiet, cachedir, blockcache);

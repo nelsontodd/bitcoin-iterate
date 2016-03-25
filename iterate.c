@@ -20,7 +20,7 @@
 #include "iterate.h"
 
 
-static void set_heights(struct block *best, struct block *genesis, struct block_map *block_map)
+static void set_heights_and_best(struct block **best, struct block *genesis, struct block_map *block_map)
 {
   struct block *b;
   struct block_map_iter it;
@@ -28,8 +28,26 @@ static void set_heights(struct block *best, struct block *genesis, struct block_
        b;
        b = block_map_next(block_map, &it)) {
     set_height(block_map, b);
-    if (b->height > best->height)
-      best = b;
+    if (b->height > (*best)->height)
+      *best = b;
+  }
+}
+
+static void set_blockchain_end(u8 *tip, struct block **best, struct block_map *block_map)
+{
+  if (!is_zero(tip)) {
+    *best = block_map_get(block_map, tip);
+    if (!*best)
+      errx(1, "Unknown --end-hash block "SHA_FMT, SHA_VALS(tip));
+  }
+}
+
+static void set_blockchain_start(u8 *start_hash, struct block **start, struct block_map *block_map)
+{
+  if (!is_zero(start_hash)) {
+    *start = block_map_get(block_map, start_hash);
+    if (!*start)
+      errx(1, "Unknown --start-hash block "SHA_FMT, SHA_VALS(start_hash));
   }
 }
 
@@ -42,27 +60,7 @@ static void link_blocks(struct block *best, struct block_map *block_map)
   }
 }  
 
-
-static void set_blockchain_end(u8 *tip, struct block *best, struct block_map *block_map)
-{
-  if (!is_zero(tip)) {
-    best = block_map_get(block_map, tip);
-    if (!best)
-      errx(1, "Unknown --end block "SHA_FMT, SHA_VALS(tip));
-  }
-}
-
-static void set_blockchain_start(u8 *start_hash, struct block *start, struct block_map *block_map)
-{
-  if (!is_zero(start_hash)) {
-    start = block_map_get(block_map, start_hash);
-    if (!start)
-      errx(1, "Unknown --start block "SHA_FMT,
-	   SHA_VALS(start_hash));
-  }
-}
-
-static void set_iteration_end(unsigned long block_end, struct block *best, struct block *genesis)
+static void set_iteration_end(unsigned long block_end, struct block **best, struct block *genesis)
 {
   if (block_end != -1UL) {
     struct block *b;
@@ -70,12 +68,12 @@ static void set_iteration_end(unsigned long block_end, struct block *best, struc
       if (!b->next)
 	errx(1, "No block end %lu found", block_end);
     }
-    best = b;
+    *best = b;
     b->next = NULL;
   }
 }
 
-static void set_iteration_start(unsigned long block_start, struct block *start, struct block *genesis)
+static void set_iteration_start(unsigned long block_start, struct block **start, struct block *genesis)
 {
   if (block_start != 0) {
     struct block *b;
@@ -83,7 +81,7 @@ static void set_iteration_start(unsigned long block_start, struct block *start, 
       if (!b->next)
 	errx(1, "No block start %lu found", block_start);
     }
-    start = b;
+    *start = b;
   }
 }
 
@@ -110,6 +108,7 @@ void iterate(char *blockdir, char *cachedir,
   struct space space;
   static char **block_fnames;
 
+
   block_fnames = block_filenames(tal_ctx, blockdir, use_testnet);
 
   block_count = read_blockchain(tal_ctx,
@@ -117,18 +116,21 @@ void iterate(char *blockdir, char *cachedir,
 		  use_testnet, cachedir, blockcache,
 		  block_fnames,
 		  &block_map, &genesis);
+
+  best  = genesis;
+  start = genesis;
   
-  set_heights(best, genesis, &block_map);
-  set_blockchain_end(tip, best, &block_map);
-  set_blockchain_start(start_hash, start, &block_map);
+  set_heights_and_best(&best, genesis, &block_map);
+  set_blockchain_end(tip, &best, &block_map);
+  set_blockchain_start(start_hash, &start, &block_map);
   
   link_blocks(best, &block_map);
 
-  set_iteration_end(block_end, best, genesis);
-  set_iteration_start(block_start, start, genesis);
+  set_iteration_end(block_end, &best, genesis);
+  set_iteration_start(block_start, &start, genesis);
 
   if (!quiet)
-    fprintf(stderr, "bitcoin-iterate: Iterating between block heights %u and %u (of %zu)\n",
+    fprintf(stderr, "bitcoin-iterate: Iterating between block heights %u and %u (of %zu total blocks)\n",
 	   start->height, best->height, block_count);
   
   utxo_map_init(&utxo_map);
