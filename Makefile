@@ -3,6 +3,7 @@ ITERATE_OBJS := utils.o io.o blockfiles.o cli.o format.o parse.o calculations.o 
 CCAN_OBJS := ccan-tal.o ccan-tal-path.o ccan-tal-str.o ccan-take.o ccan-list.o ccan-str.o ccan-opt-helpers.o ccan-opt.o ccan-opt-parse.o ccan-opt-usage.o ccan-htable.o ccan-rbuf.o ccan-hex.o ccan-tal-grab-file.o ccan-noerr.o
 CCANDIR=ccan/
 CFLAGS = -O3 -flto -ggdb -I $(CCANDIR) -Wall
+#CFLAGS = -O3 -flto -ggdb -I $(CCANDIR) -I /usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib -Wall
 LDFLAGS = -O3 -flto
 #CFLAGS = -ggdb -I $(CCANDIR) -Wall
 LDLIBS := -lcrypto

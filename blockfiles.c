@@ -154,7 +154,7 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
       }
 
       b->pos = off;
-      add_block(block_map, b, &genesis, block_fnames);
+      add_block(block_map, b, genesis, block_fnames);
 
       skip_bitcoin_transactions(&b->bh, block_start, &off);
       if (off > last_discard + CHUNK && f->mmap) {

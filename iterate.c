@@ -103,7 +103,7 @@ void iterate(char *blockdir, char *cachedir,
   void *tal_ctx = tal(NULL, char);
   size_t i, block_count = 0;
   bool needs_fee;
-  struct block *b, *best, *genesis = NULL, *start = NULL;
+  struct block *b, *best = NULL, *genesis = NULL, *start = NULL;
   struct block_map block_map;
   char *blockcache = NULL;
   struct utxo_map utxo_map;
@@ -117,7 +117,6 @@ void iterate(char *blockdir, char *cachedir,
 		  use_testnet, cachedir, blockcache,
 		  block_fnames,
 		  &block_map, &genesis);
-
   
   set_heights(best, genesis, &block_map);
   set_blockchain_end(tip, best, &block_map);

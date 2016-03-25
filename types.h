@@ -10,6 +10,7 @@
 #include <ccan/tal/tal.h>
 #include <ccan/short_types/short_types.h>
 #include <openssl/sha.h>
+#include <sys/types.h>
 
 /* We unpack varints for our in-memory representation */
 #define varint_t u64
