@@ -69,13 +69,13 @@ static void mul_and_add(u64 *over, u64 *base, u64 l, u64 r)
   *base = (b << 32) | c;
 }
 
-s64 calculate_bdc(const struct utxo *u, u32 timestamp)
+s64 calculate_bdc(const struct utxo *u, struct block *current_block, struct block *last_utxo_block)
 {
-  u32 age;
+  u32 interval = (last_utxo_block ? (current_block->bh.timestamp - last_utxo_block->bh.timestamp) : 0);
+  u32 utxo_age = (current_block->bh.timestamp - u->timestamp);
   u64 total_over = 0;
   u64 total_base = 0;
-  age = ((timestamp > u->timestamp) ? (timestamp - u->timestamp) : 0);
-  mul_and_add(&total_over, &total_base, u->unspent, age);
+  mul_and_add(&total_over, &total_base, u->unspent, (utxo_age <= interval) ? utxo_age : interval);
   /* we have satoshi-seconds, convert to satoshi days by dividing by */
   /* 86400 */
   if (total_over >= 86400/2)

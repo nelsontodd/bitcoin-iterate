@@ -21,30 +21,34 @@ static char *blockfmt = NULL, *txfmt = NULL, *inputfmt = NULL, *outputfmt = NULL
 
 static void print_block(const struct utxo_map *utxo_map, struct block *b)
 {
-  print_format(blockfmt, utxo_map, b, NULL, 0, NULL, NULL, NULL);
+  if (blockfmt) {
+    print_format(blockfmt, utxo_map, b, NULL, 0, NULL, NULL, NULL, NULL);
+  }
 }
 static void print_transaction(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum)
 {
-  print_format(txfmt, utxo_map, b, t, txnum, NULL, NULL, NULL);
+  if (txfmt) {
+    print_format(txfmt, utxo_map, b, t, txnum, NULL, NULL, NULL, NULL);
+  }
 }
 static void print_input(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i)
 {
-  print_format(inputfmt, utxo_map, b, t, txnum, i, NULL, NULL);
+  if (inputfmt) {
+    print_format(inputfmt, utxo_map, b, t, txnum, i, NULL, NULL, NULL);
+  }
 }
 static void print_output(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o)
 {
-  print_format(outputfmt, utxo_map, b, t, txnum, NULL, o, NULL);
+  if (outputfmt) {
+    print_format(outputfmt, utxo_map, b, t, txnum, NULL, o, NULL, NULL);
+  }
 }
-static void print_utxo(const struct utxo_map *utxo_map, struct block *b, struct utxo *u)
+static void print_utxo(const struct utxo_map *utxo_map, struct block *current_block, struct block *last_utxo_block, struct utxo *u)
 {
-  print_format(utxofmt, utxo_map, b, NULL, 0, NULL, NULL, u);
+  if (utxofmt) {
+    print_format(utxofmt, utxo_map, current_block, NULL, 0, NULL, NULL, u, last_utxo_block);
+  }
 }
-
-/* static block_function       blockfn  = &print_block; */
-/* static transaction_function txfn     = &print_transaction; */
-/* static input_function       inputfn  = &print_input; */
-/* static output_function      outputfn = &print_output; */
-/* static utxo_function        utxofn   = &print_utxo; */
 
 int main(int argc, char *argv[])
 {
@@ -106,12 +110,13 @@ int main(int argc, char *argv[])
 		     "  %oX: output in hex\n"
 		     "Valid utxo format:\n"
 		     "  %uh: utxo transaction hash\n"
-		     "  %ut: utxo timestamp\n"
+		     "  %us: utxo timestamp\n"
+		     "  %uN: utxo height\n"
 		     "  %uc: utxo output count\n"
 		     "  %uu: utxo unspent output count\n"
-		     "  %us: utxo spent output count\n"
+		     "  %ud: utxo spent output count\n"
 		     "  %uU: utxo unspent amount\n"
-		     "  %uS: utxo spent amount\n"
+		     "  %uD: utxo spent amount\n"
 		     "  %uC: utxo bitcoin days created\n",
 		     "Display help message");
   opt_register_arg("--block", opt_set_charp, NULL, &blockfmt,
@@ -178,7 +183,6 @@ int main(int argc, char *argv[])
 	  needs_utxo, utxo_period,
 	  use_mmap,
 	  progress_marks, quiet,
-	  /* blockfn, txfn, inputfn, outputfn, utxofn); */
 	  print_block, print_transaction, print_input, print_output, print_utxo);  
   return 0;
 }

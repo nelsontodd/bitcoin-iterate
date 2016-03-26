@@ -113,7 +113,8 @@ void print_format(const char *format,
 		  size_t txnum,
 		  struct bitcoin_transaction_input *i,
 		  struct bitcoin_transaction_output *o,
-		  struct utxo *u)
+		  struct utxo *u,
+		  struct block *last_utxo_block)
 {
   const char *c;
 
@@ -286,8 +287,11 @@ void print_format(const char *format,
       case 'h':
 	print_hash(u->tx);
 	break;
-      case 't':
+      case 's':
 	printf("%u", u->timestamp);
+	break;
+      case 'N':
+	printf("%u", u->height);
 	break;
       case 'c':
 	printf("%u", u->num_outputs);
@@ -295,18 +299,18 @@ void print_format(const char *format,
       case 'u':
 	printf("%u", u->unspent_outputs);
 	break;
-      case 's':
+      case 'd':
 	printf("%u", u->num_outputs - u->unspent_outputs);
 	break;
       case 'U':
 	printf("%"PRIu64, u->unspent);
 	break;
-      case 'S':
+      case 'D':
 	printf("%"PRIu64, u->spent);
 	break;
       case 'C':
 	printf("%"PRIi64,
-	       calculate_bdc(u, b->bh.timestamp));
+	       calculate_bdc(u, b, last_utxo_block));
 	break;
       default:
 	goto bad_fmt;

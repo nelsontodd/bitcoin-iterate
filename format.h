@@ -22,6 +22,7 @@
  * @i: current transaction input
  * @o: current transaction output
  * @u: current UTXO
+ * @last_utxo_block: last block for which UTXOs were iterated over
  *
  * In typical usage, most arguments will be `NULL` as shown in the
  * following examples:
@@ -58,6 +59,7 @@ void print_format(const char *format,
 		  size_t txnum,
 		  struct bitcoin_transaction_input *i,
 		  struct bitcoin_transaction_output *o,
-		  struct utxo *u);
+		  struct utxo *u,
+		  struct block *last_utxo_block);
 
 #endif /* BITCOIN_ITERATE_DUMP_H */

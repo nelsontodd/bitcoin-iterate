@@ -101,7 +101,7 @@ void iterate(char *blockdir, char *cachedir,
   void *tal_ctx = tal(NULL, char);
   size_t i, block_count = 0;
   bool needs_fee;
-  struct block *b, *best = NULL, *genesis = NULL, *start = NULL;
+  struct block *b, *best = NULL, *genesis = NULL, *start = NULL, *last_utxo_block = NULL;
   struct block_map block_map;
   char *blockcache = NULL;
   struct utxo_map utxo_map;
@@ -129,9 +129,13 @@ void iterate(char *blockdir, char *cachedir,
   set_iteration_end(block_end, &best, genesis);
   set_iteration_start(block_start, &start, genesis);
 
-  if (!quiet)
+  if (!quiet) {
     fprintf(stderr, "bitcoin-iterate: Iterating between block heights %u and %u (of %zu total blocks)\n",
 	   start->height, best->height, block_count);
+    if (utxofn) {
+      fprintf(stderr, "bitcoin-iterate: Iterating over UTXOs every %u blocks\n", utxo_period);
+    }
+  }
   
   utxo_map_init(&utxo_map);
  	
@@ -163,9 +167,6 @@ void iterate(char *blockdir, char *cachedir,
       start = NULL;
     }
 
-    /* if (!start && blockfmt) */
-    /*   print_format(blockfmt, &utxo_map, b, NULL, 0, NULL, NULL, NULL); */
-
     if (!start && blockfn)
       blockfn(&utxo_map, b);
 
@@ -194,32 +195,15 @@ void iterate(char *blockdir, char *cachedir,
       read_bitcoin_transaction(&space, &tx[i],
 			       block_file(block_fnames, b->filenum, use_mmap), &off);
 
-      /* if (!start && txfmt) */
-      /* 	print_format(txfmt, &utxo_map, b, &tx[i], i, */
-      /* 		     NULL, NULL, NULL); */
       if (!start && txfn)
 	txfn(&utxo_map, b, &tx[i], i);
 
-      /* if (!start && inputfmt) { */
-      /* 	for (j = 0; j < tx[i].input_count; j++) { */
-      /* 	  print_format(inputfmt, &utxo_map, b, */
-      /* 		       &tx[i], i, &tx[i].input[j], */
-      /* 		       NULL, NULL); */
-      /* 	} */
-      /* } */
       if (!start && inputfn) {
 	for (j = 0; j < tx[i].input_count; j++) {
 	  inputfn(&utxo_map, b, &tx[i], i, &tx[i].input[j]);
 	}
       }
       
-      /* if (!start && outputfmt) { */
-      /* 	for (j = 0; j < tx[i].output_count; j++) { */
-      /* 	  print_format(outputfmt, &utxo_map, b, */
-      /* 		       &tx[i], i, NULL, */
-      /* 		       &tx[i].output[j], NULL); */
-      /* 	} */
-      /* } */
       if (!start && outputfn) {
 	for (j = 0; j < tx[i].output_count; j++) {
 	  outputfn(&utxo_map, b, &tx[i], i, &tx[i].output[j]);
@@ -240,23 +224,15 @@ void iterate(char *blockdir, char *cachedir,
 	add_utxo(tal_ctx, &utxo_map, b, &tx[i], i, txoff);
       }
     }
-    /* if (utxofmt && ((b->height % utxo_period) == 0)) { */
-    /*   struct utxo_map_iter it; */
-    /*   struct utxo *utxo; */
-    /*   for (utxo = utxo_map_first(&utxo_map, &it); */
-    /* 	   utxo; */
-    /* 	   utxo = utxo_map_next(&utxo_map, &it)) { */
-    /* 	print_format(utxofmt, &utxo_map, b, NULL, 0, NULL, NULL, utxo); */
-    /*   } */
-    /* } */
     if (utxofn && ((b->height % utxo_period) == 0)) {
       struct utxo_map_iter it;
       struct utxo *utxo;
       for (utxo = utxo_map_first(&utxo_map, &it);
 	   utxo;
 	   utxo = utxo_map_next(&utxo_map, &it)) {
-	utxofn(&utxo_map, b, utxo);
+	utxofn(&utxo_map, b, last_utxo_block, utxo);
       }
+      last_utxo_block = b;
     }
 		
   }

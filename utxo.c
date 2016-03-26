@@ -60,11 +60,12 @@ void add_utxo(const tal_t *tal_ctx,
   struct utxo *utxo;
   unsigned int i;
   unsigned int spend_count = 0;
-  u64 initial_spent = 0;
+  u64 initial_spent = 0, initial_unspent = 0;
 
   for (i = 0; i < t->output_count; i++) {
     if (!is_unspendable(&t->output[i])) {
       spend_count++;
+      initial_unspent += t->output[i].amount;
     } else {
       initial_spent += t->output[i].amount;
     }
@@ -81,11 +82,10 @@ void add_utxo(const tal_t *tal_ctx,
   utxo->unspent_outputs = spend_count;
   utxo->height = b->height;
   utxo->timestamp = b->bh.timestamp;
-  utxo->unspent = 0;
-  utxo->spent  = initial_spent;
+  utxo->spent   = initial_spent;
+  utxo->unspent = initial_unspent;
   for (i = 0; i < utxo->num_outputs; i++) {
     utxo->amount[i] = t->output[i].amount;
-    utxo->unspent += t->output[i].amount;
   }
   guess_output_types(t, output_types(utxo));
 
@@ -101,7 +101,8 @@ void release_utxo(struct utxo_map *utxo_map,
   if (!utxo)
     errx(1, "Unknown utxo for "SHA_FMT, SHA_VALS(i->hash));
 
-  utxo->spent += utxo->amount[i->index];
+  utxo->spent   += utxo->amount[i->index];
+  utxo->unspent -= utxo->amount[i->index];
 
   if (--utxo->unspent_outputs == 0) {
     utxo_map_del(utxo_map, utxo);

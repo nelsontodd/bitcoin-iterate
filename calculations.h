@@ -7,7 +7,7 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
 		   const struct bitcoin_transaction *t,
 		   bool is_coinbase);
   
-s64 calculate_bdc(const struct utxo *u, u32 timestamp);
+s64 calculate_bdc(const struct utxo *u, struct block *current_block, struct block *last_utxo_block);
 
 s64 calculate_bdd(const struct utxo_map *utxo_map,
 		  const struct bitcoin_transaction *t,
