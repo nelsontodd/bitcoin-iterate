@@ -118,3 +118,10 @@ s64 calculate_bdd(const struct utxo_map *utxo_map,
     return -2; /* overflow! */
   return (((total_over << 47) / 86400) << 17) + (total_base / 86400);
 }
+
+#define BTCS_PER_SATOSHI 1E-8
+
+double to_btc(s64 satoshis)
+{
+  return ((double) ((s64) satoshis)) * BTCS_PER_SATOSHI;
+}

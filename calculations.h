@@ -12,5 +12,7 @@ s64 calculate_bdc(const struct utxo *u, struct block *current_block, struct bloc
 s64 calculate_bdd(const struct utxo_map *utxo_map,
 		  const struct bitcoin_transaction *t,
 		  bool is_coinbase, u32 timestamp);
+
+double to_btc(s64 satoshis);
   
 #endif /* BITCOIN_ITERATE_CALCULATIONS_H */
