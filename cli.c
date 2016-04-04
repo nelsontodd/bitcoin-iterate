@@ -25,19 +25,19 @@ static void print_block(const struct utxo_map *utxo_map, struct block *b)
     print_format(blockfmt, utxo_map, b, NULL, 0, NULL, NULL, NULL, NULL);
   }
 }
-static void print_transaction(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum)
+static void print_transaction(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum)
 {
   if (txfmt) {
     print_format(txfmt, utxo_map, b, t, txnum, NULL, NULL, NULL, NULL);
   }
 }
-static void print_input(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i)
+static void print_input(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum, struct input *i)
 {
   if (inputfmt) {
     print_format(inputfmt, utxo_map, b, t, txnum, i, NULL, NULL, NULL);
   }
 }
-static void print_output(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o)
+static void print_output(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum, struct output *o)
 {
   if (outputfmt) {
     print_format(outputfmt, utxo_map, b, t, txnum, NULL, o, NULL, NULL);

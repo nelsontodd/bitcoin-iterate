@@ -75,7 +75,7 @@ static void pull_hash(struct file *f, off_t *poff, u8 dst[32])
 }
 
 static void read_input(struct space *space, struct file *f, off_t *poff,
-		       struct bitcoin_transaction_input *input)
+		       struct input *input)
 {
 	pull_hash(f, poff, input->hash);
 	input->index = pull_u32(f, poff);
@@ -87,7 +87,7 @@ static void read_input(struct space *space, struct file *f, off_t *poff,
 }
 
 static void read_output(struct space *space, struct file *f, off_t *poff,
-			struct bitcoin_transaction_output *output)
+			struct output *output)
 {
 	output->amount = pull_u64(f, poff);
 	output->script_length = pull_varint(f, poff);
@@ -95,8 +95,8 @@ static void read_output(struct space *space, struct file *f, off_t *poff,
 	pull_bytes(f, poff, output->script, output->script_length);
 }
 
-void read_bitcoin_transaction(struct space *space,
-			      struct bitcoin_transaction *trans,
+void read_transaction(struct space *space,
+			      struct transaction *trans,
 			      struct file *f, off_t *poff)
 {
 	size_t i;
@@ -106,13 +106,13 @@ void read_bitcoin_transaction(struct space *space,
 	trans->version = pull_u32(f, poff);
 	trans->input_count = pull_varint(f, poff);
 	trans->input = space_alloc_arr(space,
-				       struct bitcoin_transaction_input,
+				       struct input,
 				       trans->input_count);
 	for (i = 0; i < trans->input_count; i++)
 		read_input(space, f, poff, trans->input + i);
 	trans->output_count = pull_varint(f, poff);
 	trans->output = space_alloc_arr(space,
-					struct bitcoin_transaction_output,
+					struct output,
 					trans->output_count);
 	for (i = 0; i < trans->output_count; i++)
                read_output(space, f, poff, trans->output + i);
@@ -153,7 +153,7 @@ bool next_block_header_prefix(struct file *f, off_t *off, const u32 marker)
 	return false;
 }
 
-bool read_bitcoin_block_header(struct bitcoin_block *block,
+bool read_block_header(struct block_header *bh,
 			  struct file *f, off_t *off,
 			  u8 block_md[SHA256_DIGEST_LENGTH],
 			  const u32 marker)
@@ -161,18 +161,18 @@ bool read_bitcoin_block_header(struct bitcoin_block *block,
 	SHA256_CTX sha256;
 	off_t start;
 
-	block->D9B4BEF9 = pull_u32(f, off);
-	assert(block->D9B4BEF9 == marker);
-	block->len = pull_u32(f, off);
+	bh->D9B4BEF9 = pull_u32(f, off);
+	assert(bh->D9B4BEF9 == marker);
+	bh->len = pull_u32(f, off);
 
 	/* Hash only covers version to nonce, inclusive. */
 	start = *off;
-	block->version = pull_u32(f, off);
-	pull_hash(f, off, block->prev_hash);
-	pull_hash(f, off, block->merkle_hash);
-	block->timestamp = pull_u32(f, off);
-	block->target = pull_u32(f, off);
-	block->nonce = pull_u32(f, off);
+	bh->version = pull_u32(f, off);
+	pull_hash(f, off, bh->prev_hash);
+	pull_hash(f, off, bh->merkle_hash);
+	bh->timestamp = pull_u32(f, off);
+	bh->target = pull_u32(f, off);
+	bh->nonce = pull_u32(f, off);
 
 	/* Bitcoin uses double sha (it's not quite known why...) */
 	SHA256_Init(&sha256);
@@ -190,14 +190,14 @@ bool read_bitcoin_block_header(struct bitcoin_block *block,
 	SHA256_Update(&sha256, block_md, SHA256_DIGEST_LENGTH);
 	SHA256_Final(block_md, &sha256);
 
-	block->transaction_count = pull_varint(f, off);
+	bh->transaction_count = pull_varint(f, off);
 
-	return block;
+	return bh;
 }
 
-void skip_bitcoin_transactions(const struct bitcoin_block *b,
+void skip_transactions(const struct block_header *bh,
 			       off_t block_start,
 			       off_t *off)
 {
-	*off = block_start + 8 + b->len;
+	*off = block_start + 8 + bh->len;
 }

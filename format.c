@@ -65,7 +65,7 @@ static void print_le64(u64 v)
   print_hex(&l, sizeof(l));
 }
 
-static void dump_tx_input(const struct bitcoin_transaction_input *input)
+static void dump_tx_input(const struct input *input)
 {
   print_hash(input->hash);
   print_le32(input->index);
@@ -74,14 +74,14 @@ static void dump_tx_input(const struct bitcoin_transaction_input *input)
   print_le32(input->sequence_number);
 }
 
-static void dump_tx_output(const struct bitcoin_transaction_output *output)
+static void dump_tx_output(const struct output *output)
 {
   print_le64(output->amount);
   print_varint(output->script_length);
   print_hex(output->script, output->script_length);
 }
 
-static void dump_tx(const struct bitcoin_transaction *tx)
+static void dump_tx(const struct transaction *tx)
 {
   varint_t i;
 
@@ -95,24 +95,24 @@ static void dump_tx(const struct bitcoin_transaction *tx)
   print_le32(tx->lock_time);
 }
 
-static void dump_block_header(const struct bitcoin_block *b)
+static void dump_block_header(const struct block_header *bh)
 {
-  print_le32(b->version);
-  print_hash(b->prev_hash);
-  print_hash(b->merkle_hash);
-  print_le32(b->timestamp);
-  print_le32(b->target);
-  print_le32(b->nonce);
+  print_le32(bh->version);
+  print_hash(bh->prev_hash);
+  print_hash(bh->merkle_hash);
+  print_le32(bh->timestamp);
+  print_le32(bh->target);
+  print_le32(bh->nonce);
 }
 
 /* FIXME: Speed up! */
 void print_format(const char *format,
 		  const struct utxo_map *utxo_map,
 		  struct block *b,
-		  struct bitcoin_transaction *t,
+		  struct transaction *t,
 		  size_t txnum,
-		  struct bitcoin_transaction_input *i,
-		  struct bitcoin_transaction_output *o,
+		  struct input *i,
+		  struct output *o,
 		  struct utxo *u,
 		  struct block *last_utxo_block)
 {

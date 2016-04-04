@@ -1,0 +1,15 @@
+#!/bin/bash
+
+BITCOIN_ITERATE="../bitcoin-iterate"
+
+function format_specifiers {
+    echo -n $1 `$BITCOIN_ITERATE -h | egrep "^  %$2" | cut -c 3-5 | tr '\n' ' '`
+}
+
+BLOCK_FORMAT=`format_specifiers BLOCK b`
+TRANSACTION_FORMAT=`format_specifiers TRANSACTION t`
+INPUT_FORMAT=`format_specifiers INPUT i`
+OUTPUT_FORMAT=`format_specifiers OUTPUT o`
+UTXO_FORMAT=`format_specifiers UTXO u`
+
+$BITCOIN_ITERATE --blockdir "$BITCOIN_ITERATE_BLOCK_DIR" --cache "$BITCOIN_ITERATE_CACHE_DIR" $@  --block  "$BLOCK_FORMAT" --transaction "$TRANSACTION_FORMAT" --input "$INPUT_FORMAT" --output "$OUTPUT_FORMAT" --utxo "$UTXO_FORMAT"

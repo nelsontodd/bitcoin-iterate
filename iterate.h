@@ -6,9 +6,9 @@
 #include "utxo.h"
 
 typedef void (*block_function)(const struct utxo_map *utxo_map, struct block *b);
-typedef void (*transaction_function)(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum);
-typedef void (*input_function)(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_input *i);
-typedef void (*output_function)(const struct utxo_map *utxo_map, struct block *b, struct bitcoin_transaction *t, size_t txnum, struct bitcoin_transaction_output *o);
+typedef void (*transaction_function)(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum);
+typedef void (*input_function)(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum, struct input *i);
+typedef void (*output_function)(const struct utxo_map *utxo_map, struct block *b, struct transaction *t, size_t txnum, struct output *o);
 typedef void (*utxo_function)(const struct utxo_map *utxo_map, struct block *current_block, struct block *last_utxo_block, struct utxo *u);
 
 void iterate(char *blockdir, char *cachedir,

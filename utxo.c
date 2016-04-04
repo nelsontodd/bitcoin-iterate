@@ -12,7 +12,7 @@ bool utxohash_eq(const struct utxo *utxo, const u8 *key)
   return memcmp(&utxo->tx, key, sizeof(utxo->tx)) == 0;
 }
 
-bool is_unspendable(const struct bitcoin_transaction_output *o)
+bool is_unspendable(const struct output *o)
 {
   return (o->script_length > 0 && o->script[0] == OP_RETURN);
 }
@@ -32,7 +32,7 @@ u8 *output_types(struct utxo *utxo)
  * 2) lots of wallets still send change to the same public key hash as
  *    they were received originally.
  */
-static void guess_output_types(const struct bitcoin_transaction *t, u8 *types)
+static void guess_output_types(const struct transaction *t, u8 *types)
 {
   if (t->output_count == 2) {
     bool first_round = ((t->output[0].amount % 1000) == 0);
@@ -54,7 +54,7 @@ static void guess_output_types(const struct bitcoin_transaction *t, u8 *types)
 void add_utxo(const tal_t *tal_ctx,
 	      struct utxo_map *utxo_map,
 	      const struct block *b,
-	      const struct bitcoin_transaction *t,
+	      const struct transaction *t,
 	      u32 txnum, off_t off)
 {
   struct utxo *utxo;
@@ -93,7 +93,7 @@ void add_utxo(const tal_t *tal_ctx,
 }
 
 void release_utxo(struct utxo_map *utxo_map,
-		  const struct bitcoin_transaction_input *i)
+		  const struct input *i)
 {
   struct utxo *utxo;
 

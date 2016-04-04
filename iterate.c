@@ -152,7 +152,7 @@ void iterate(char *blockdir, char *cachedir,
   /* Now run forwards. */
   for (b = genesis; b; b = b->next) {
     off_t off;
-    struct bitcoin_transaction *tx;
+    struct transaction *tx;
 
     if (b == start) {
       /* Are we UTXO caching? */
@@ -186,13 +186,13 @@ void iterate(char *blockdir, char *cachedir,
     off = b->pos;
 
     space_init(&space);
-    tx = space_alloc_arr(&space, struct bitcoin_transaction,
+    tx = space_alloc_arr(&space, struct transaction,
 			 b->bh.transaction_count);
     for (i = 0; i < b->bh.transaction_count; i++) {
       size_t j;
       off_t txoff = off;
 
-      read_bitcoin_transaction(&space, &tx[i],
+      read_transaction(&space, &tx[i],
 			       block_file(block_fnames, b->filenum, use_mmap), &off);
 
       if (!start && txfn)

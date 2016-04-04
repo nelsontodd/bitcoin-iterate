@@ -147,7 +147,7 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
       b = tal(tal_ctx, struct block);
       b->filenum = i;
       b->height = -1;
-      if (!read_bitcoin_block_header(&b->bh, f, &off,
+      if (!read_block_header(&b->bh, f, &off,
 				     b->sha, netmarker)) {
 	tal_free(b);
 	break;
@@ -156,7 +156,7 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
       b->pos = off;
       add_block(block_map, b, genesis, block_fnames);
 
-      skip_bitcoin_transactions(&b->bh, block_start, &off);
+      skip_transactions(&b->bh, block_start, &off);
       if (off > last_discard + CHUNK && f->mmap) {
 	size_t len = CHUNK;
 	if ((size_t)last_discard + len > f->len)

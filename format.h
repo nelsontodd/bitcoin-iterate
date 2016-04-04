@@ -55,10 +55,10 @@
 void print_format(const char *format,
 		  const struct utxo_map *utxo_map,
 		  struct block *b,
-		  struct bitcoin_transaction *t,
+		  struct transaction *t,
 		  size_t txnum,
-		  struct bitcoin_transaction_input *i,
-		  struct bitcoin_transaction_output *o,
+		  struct input *i,
+		  struct output *o,
 		  struct utxo *u,
 		  struct block *last_utxo_block);
 

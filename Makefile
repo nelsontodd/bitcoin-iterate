@@ -13,6 +13,10 @@ all: bitcoin-iterate doc/bitcoin-iterate.1
 
 .PHONY: install
 .PHONY: test
+.PHONY: tags
+
+tags:
+	bash -c 'etags *.{c,h} README.md test/all_printables'
 
 install:
 	cp bitcoin-iterate $(BIN_DIR)/bitcoin-iterate

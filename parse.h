@@ -28,10 +28,10 @@
 bool next_block_header_prefix(struct file *f, off_t *off, const u32 marker);
 
 /**
- * read_bitcoin_block_header - Reads the block header from disk into
+ * read_block_header - Reads the block header from disk into
  * *block.
  *
- * @block: block header data structure to populate
+ * @bh: block header data structure to populate
  * @f: current file
  * @off: current file offset
  * @block_md: hash for the block
@@ -40,16 +40,16 @@ bool next_block_header_prefix(struct file *f, off_t *off, const u32 marker);
  *  This is the second step in iterating over the blockchain and it
  *  occurs again for each new block iterated over.
  */
-bool read_bitcoin_block_header(struct bitcoin_block *block,
-				 struct file *f, off_t *off,
-				 u8 block_md[SHA256_DIGEST_LENGTH],
-				 const u32 marker);
+bool read_block_header(struct block_header *bh,
+		       struct file *f, off_t *off,
+		       u8 block_md[SHA256_DIGEST_LENGTH],
+		       const u32 marker);
 
 /**
- * skip_bitcoin_transactions - Fast-forward *off through past block
+ * skip_transactions - Fast-forward *off through past block
  * *b's transactions.
  *
- * @b: block
+ * @bh: block header
  * @block_start: block offset
  * @off: current file offset
  * 
@@ -57,11 +57,11 @@ bool read_bitcoin_block_header(struct bitcoin_block *block,
  *  allows skipping all the transactions in a block and (therefore)
  *  jumping to the next block.
  */
-void skip_bitcoin_transactions(const struct bitcoin_block *b,
-				 off_t block_start, off_t *off);
+void skip_transactions(const struct block_header *bh,
+			       off_t block_start, off_t *off);
 
 /**
- * read_bitcoin_transaction - Reads a transaction from disk into *t.
+ * read_transaction - Reads a transaction from disk into *t.
  *
  * @space: space used for allocation
  * @t: transaction data structure to populate
@@ -72,7 +72,7 @@ void skip_bitcoin_transactions(const struct bitcoin_block *b,
  *  the first block has been reached, this allows iterating over all
  *  subsequent transactions.
  */
-void read_bitcoin_transaction(struct space *space,
-				struct bitcoin_transaction *t,
+void read_transaction(struct space *space,
+				struct transaction *t,
 				struct file *f, off_t *off);
 #endif /* BITCOIN_PARSE_PARSE_H */

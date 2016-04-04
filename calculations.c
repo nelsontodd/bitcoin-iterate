@@ -7,7 +7,7 @@
 /* This is kind of silly, since they can print it and sum it
  * themselves.  But convenient though... */
 s64 calculate_fees(const struct utxo_map *utxo_map,
-		   const struct bitcoin_transaction *t,
+		   const struct transaction *t,
 		   bool is_coinbase)
 {
   size_t i;
@@ -84,7 +84,7 @@ s64 calculate_bdc(const struct utxo *u, struct block *current_block, struct bloc
 }
 
 s64 calculate_bdd(const struct utxo_map *utxo_map,
-		  const struct bitcoin_transaction *t,
+		  const struct transaction *t,
 		  bool is_coinbase, u32 timestamp)
 {
   size_t i;
