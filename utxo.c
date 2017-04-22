@@ -84,6 +84,7 @@ void add_utxo(const tal_t *tal_ctx,
   utxo->timestamp = b->bh.timestamp;
   utxo->spent   = initial_spent;
   utxo->unspent = initial_unspent;
+  utxo->txnum   = txnum;
   for (i = 0; i < utxo->num_outputs; i++) {
     utxo->amount[i] = t->output[i].amount;
   }

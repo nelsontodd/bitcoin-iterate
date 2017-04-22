@@ -242,6 +242,14 @@ void print_format(const char *format,
 	} else
 	  printf("0");
 	break;
+      case 'T':
+	/* Coinbase doesn't have valid input. */
+	if (txnum != 0) {
+	  struct utxo *utxo = utxo_map_get(utxo_map, i->hash);
+	  printf("%u", utxo->txnum);
+	} else
+	  printf("-1");
+	break;
       case 'p':
 	/* Coinbase doesn't have valid input. */
 	if (txnum != 0) {
@@ -266,6 +274,9 @@ void print_format(const char *format,
 	break;
       case 's':
 	print_hex(o->script, o->script_length);
+	break;
+      case 'q':
+	printf("%u", i->sequence_number);
 	break;
       case 'N':
 	printf("%zu", o - t->output);

@@ -94,9 +94,11 @@ int main(int argc, char *argv[])
 		     "  %ii: input index\n"
 		     "  %il: input script length\n"
 		     "  %is: input script as a hex string\n"
+		     "  %iq: input nSequence\n"
 		     "  %iN: input number\n"
 		     "  %iX: input in hex\n"
 		     "  %iB: input UTXO block number (0 for coinbase)\n"
+		     "  %iT: input UTXO transaction number (-1 for coinbase)\n"
 		     "  %ip: input payment guess: same ("
 		     stringify(CHANGE_OUTPUT) ") or different ("
 		     stringify(PAYMENT_OUTPUT) ") owner, or ("
@@ -165,6 +167,8 @@ int main(int argc, char *argv[])
   if (inputfmt && strstr(inputfmt, "%tD"))
     needs_utxo = true;
   if (inputfmt && strstr(inputfmt, "%iB"))
+    needs_utxo = true;
+  if (inputfmt && strstr(inputfmt, "%iT"))
     needs_utxo = true;
   if (inputfmt && strstr(inputfmt, "%ia"))
     needs_utxo = true;

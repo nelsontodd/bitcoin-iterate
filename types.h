@@ -120,6 +120,9 @@ struct utxo {
 	/* Height. */
 	unsigned int height;
 
+	/* txindex within block. */
+	unsigned int txnum;
+
 	/* Number of outputs. */
 	u32 num_outputs;
 
