@@ -117,7 +117,6 @@ void print_format(const char *format,
 		  struct block *last_utxo_block)
 {
   const char *c;
-
   for (c = format; *c; c++) {
     if (*c != '%') {
       fputc(*c, stdout);

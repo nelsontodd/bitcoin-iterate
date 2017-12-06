@@ -13,12 +13,12 @@ clean:
 
 # All outputs [blockheight,txnum,txlen,amount]
 outputs.csv:
-	../bitcoin-iterate -q --output=%bN,%tN,%tl,%oa > $@
+	../bitcoin-iterate -q --output=%bN,%tN,%tl,%oa --cache ../cache --blockdir=/data/.bitcoin/blocks > $@
 
 # Eliminate outputs which have an all ASCII output of at least 20
 # bytes (so false positive rate ~ 1 in million).
 outputs-nospam.csv:
-	../bitcoin-iterate -q --output=%bN,%tN,%tl,%to,%os | grep -v ',\([0-9a-f][0-9a-f]\)*\([234567].\)\{20,\}' > $@
+	../bitcoin-iterate -q --output=%bN,%tN,%tl,%to,%os --cache ../cache --blockdir=/data/.bitcoin/blocks  | grep -v ',\([0-9a-f][0-9a-f]\)*\([234567].\)\{20,\}' > $@
 
 # We do this by filtering out all-ascii outputs (above), and only
 # printing txs if they still have all their outputs.
