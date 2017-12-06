@@ -1,0 +1,23 @@
+#!/bin/bash
+
+TEST_DIR=test
+BITCOIN_ITERATE=./bitcoin-iterate
+OUTPUT_DIR=tmp/test_output
+
+if [ -z $BLOCKDIR ]; then
+    echo "Please set BLOCKDIR environment variable to directory containing bitcoin blocks"
+    exit 1
+fi
+
+for cmdline_path in $(find $TEST_DIR -iname "*.test"); do
+    name=$(echo $(basename $cmdline_path) | sed -r -e 's/\.test//g')
+    expected_output=${TEST_DIR}/${name}.output
+    actual_output=${OUTPUT_DIR}/${name}.output
+	bash -c "$BITCOIN_ITERATE --blockdir $BLOCKDIR --cache tmp/cache $(cat $cmdline_path) > $actual_output"
+    if diff -u $expected_output $actual_output; then
+    echo "[OK] $name"
+    else
+    echo "[FAIL] $name"
+    diff -u $expected_output $actual_output
+    fi
+done
