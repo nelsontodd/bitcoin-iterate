@@ -5,3 +5,4 @@ ccan/tools/configurator/configurator
 ccan/tools/configurator/configurator.dSYM/*
 configurator.out.dSYM/*
 TAGS
+tmp/

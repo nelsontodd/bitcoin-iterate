@@ -35,7 +35,6 @@ static void set_heights_and_best(struct block **best, struct block *genesis, str
 
 static void set_blockchain_end(u8 *tip, struct block **best, struct block_map *block_map)
 {
-  fprintf(stderr, "Iterate.c top of set_blockchain_end");
   if (!is_zero(tip)) {
     *best = block_map_get(block_map, tip);
     if (!*best)
@@ -76,7 +75,6 @@ static void set_iteration_end(unsigned long block_end, struct block **best, stru
 
 static void set_iteration_start(unsigned long block_start, struct block **start, struct block *genesis)
 {
-  fprintf(stderr,"Iterate.c inside set_iteration_start \n");
   if (block_start != 0) {
     struct block *b;
     for (b = genesis; b->height != block_start; b = b->next) {
@@ -84,7 +82,6 @@ static void set_iteration_start(unsigned long block_start, struct block **start,
 	errx(1, "No block start %lu found", block_start);
     }
     *start = b;
-	fprintf(stderr,"Iterate.c block start != 0 \n");
   }
     //*start = NULL; //this shit wasnt set before
 }
@@ -102,7 +99,6 @@ void iterate(char *blockdir, char *cachedir,
 	     output_function outputfn,
 	     utxo_function utxofn)
 {
-  fprintf(stderr,"Iterate.c blockfn: %x",blockfn);
   void *tal_ctx = tal(NULL, char);
   size_t i, block_count = 0;
   bool needs_fee;
@@ -112,7 +108,6 @@ void iterate(char *blockdir, char *cachedir,
   struct utxo_map utxo_map;
   struct space space;
   static char **block_fnames;
-  fprintf(stderr, "Iterate.c top; cache value: %s \n", cachedir);
 
   block_fnames = block_filenames(tal_ctx, blockdir, use_testnet);
 
@@ -122,25 +117,15 @@ void iterate(char *blockdir, char *cachedir,
 		  block_fnames,
 		  &block_map, &genesis);
 
-  fprintf(stderr, "Iterate.c read blockchain; cache value: %s \n", cachedir);
-  fprintf(stderr, "Iterate.c block_count: %i \n", block_count);
   best  = genesis;
   start = genesis;
-  fprintf(stderr, "Iterate.c block_map: %x \n", block_map);
-  fprintf(stderr, "Iterate.c genesis: %x \n", genesis);
-  fprintf(stderr, "Iterate.c set best and start: Cache value %s \n", cachedir);
   set_heights_and_best(&best, genesis, &block_map);
-  fprintf(stderr, "Iterate.c after set_heights_and_best: Cache value %s \n", cachedir);
   set_blockchain_end(tip, &best, &block_map);
-  fprintf(stderr, "Iterate.c after set_blockchain_end: Cache value %s \n", cachedir);
   set_blockchain_start(start_hash, &start, &block_map);
-  fprintf(stderr, "Iterate.c after set_blockchain_start: Cache value %s \n", cachedir);
   link_blocks(best, &block_map);
 
   set_iteration_end(block_end, &best, genesis);
   set_iteration_start(block_start, &start, genesis);
-  fprintf(stderr, "Iterate.c start: %x \n",start);
-  fprintf(stderr, "Iterate.c after set_iteration \n");
   if (!quiet) {
     fprintf(stderr, "bitcoin-iterate: Iterating between block heights %u and %u (of %zu total blocks)\n",
 	   start->height, best->height, block_count);
@@ -155,21 +140,18 @@ void iterate(char *blockdir, char *cachedir,
   /* Do we have cache utxo? */
   if (cachedir && start && needs_utxo) {
     if (read_utxo_cache(tal_ctx, quiet, &utxo_map, cachedir, start->sha)) {
-      fprintf(stderr, "Iterate.c hi after read_utxo_cache: cachedir %s \n", cachedir);
       needs_fee = false;
     } else if (!quiet)
       fprintf(stderr, "bitcoin-iterate: Did not find valid UTXO cache\n");
   }
 
   /* Now run forwards. */
-  fprintf(stderr, "Iterate.c start val: %x \n",start);
   for (b = genesis; b; b = b->next) {
     off_t off;
     struct transaction *tx;
 
     if (b == start) { /* start is not being set correctly*/
       /* Are we UTXO caching? */
-      fprintf(stderr, "Iterate.c should also equal b: %x \n",b);
       if (cachedir && needs_utxo) {
 		if (needs_fee) {
 		   /* Save cache for next time. */
@@ -249,5 +231,4 @@ void iterate(char *blockdir, char *cachedir,
     }
 		
   }
-  fprintf(stderr, "Iterate.c bottom; cache value: %s \n", cachedir);
 }

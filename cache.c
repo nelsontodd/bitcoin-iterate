@@ -28,10 +28,8 @@ bool read_utxo_cache(const tal_t *ctx,
   contents = grab_file(file,file);
   if (!contents) {
     tal_free(file);
-    fprintf(stderr,"Cache.c contents was empty %s\n", contents);
     return false;
   }
-  fprintf(stderr,"Cache.c contents was not empty %s\n", contents);
 
   bytes = tal_count(contents) - 1;
 
@@ -73,10 +71,8 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
   struct utxo *utxo;
   int fd;
 
-  fprintf(stderr, "Cache.c write_utxo_cache function before path_join: Cache value %s \n", cachedir);
   hex_encode(blockid, SHA256_DIGEST_LENGTH, blockhex, sizeof(blockhex));
   file = path_join(NULL, cachedir, blockhex);
-  fprintf(stderr, "Cache.c write_utxo_cache function post path_join: Cache value %s \n", cachedir);
   if (!quiet)
     fprintf(stderr, "bitcoin-iterate: Writing UTXOs to cache at %s\n", file);
   
@@ -100,14 +96,9 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
 
 char  * set_blockcache_path(char *blockcache, tal_t *tal_ctx, char *cachedir, char *last_block_fname)
 {
-  fprintf(stderr, "In set_blockcache_path \n");
-  fprintf(stderr, "blockcache: %s \n",blockcache);
-  fprintf(stderr, "cachedir: %s \n",cachedir);
-  fprintf(stderr, "last block file name: %s \n",last_block_fname);
   blockcache = path_join(tal_ctx,
 			 cachedir,
 			 path_basename(tal_ctx, last_block_fname));
-  fprintf(stderr, "blockcache: %s \n",blockcache);
   return blockcache;
 }
 
@@ -117,7 +108,6 @@ static bool blockcache_is_valid(bool quiet, char *blockcache, char *last_block_f
   
   if (stat(last_block_fname, &block_st) != 0)
     errx(1, "Could not stat %s", last_block_fname);
-  fprintf(stderr, "Testing if blockcache is valid, blockcache: %s \n",blockcache);
   if (stat(blockcache, &cache_st) == 0) {
     if (block_st.st_mtime >= cache_st.st_mtime) {
       /* Cache file is older than (or as old as) last block file */
@@ -170,9 +160,7 @@ size_t read_blockchain(tal_t *tal_ctx,
     size_t last = tal_count(block_fnames) - 1;
     char *last_block_fname = block_fnames[last];
 		blockcache = set_blockcache_path(blockcache, tal_ctx, cachedir, last_block_fname);
-    fprintf(stderr,"In cache.c, after running set_blockcache, blockcache: %s \n", blockcache);
     if (blockcache_is_valid(quiet, blockcache, last_block_fname)) {
-		fprintf(stderr,"In cache.c, blockcache was valid \n");
       block_count = read_blockcache(tal_ctx, quiet,
 				    block_map, blockcache,
 				    genesis, block_fnames);
@@ -193,9 +181,7 @@ size_t read_blockchain(tal_t *tal_ctx,
 				    block_fnames,
 				    block_map, genesis);
   }
-  fprintf(stderr,"In cache.c outside blockcache if, blockcache: %s \n",blockcache);
   if (blockcache) {
-     fprintf(stderr,"In cache.c Blockcache value: %s", blockcache);
      write_blockcache(block_map, quiet, cachedir, blockcache);
   }
   return block_count;

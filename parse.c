@@ -4,6 +4,7 @@
 #include <ccan/err/err.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <assert.h>
 #include "types.h"
 #include "parse.h"
@@ -86,6 +87,22 @@ static void read_input(struct space *space, struct file *f, off_t *poff,
 	input->sequence_number = pull_u32(f, poff);
 }
 
+static void read_witness(struct file *f, off_t *poff)
+{
+	varint_t num_bytes = pull_varint(f, poff);
+	u8 *witness[num_bytes];
+	pull_bytes(f, poff, witness, num_bytes);
+}
+
+static void read_witness_stack(struct file *f, off_t *poff)
+{
+    size_t i;
+	varint_t stack_count = pull_varint(f, poff);
+	for (i=0; i<stack_count;i++) {
+		read_witness(f, poff);
+	}
+}
+
 static void read_output(struct space *space, struct file *f, off_t *poff,
 			struct output *output)
 {
@@ -102,9 +119,15 @@ void read_transaction(struct space *space,
 	size_t i;
 	off_t start = *poff;
 	SHA256_CTX sha256;
-
 	trans->version = pull_u32(f, poff);
 	trans->input_count = pull_varint(f, poff);
+	if (trans->input_count == 0) {
+			trans->segwit = 1;
+			pull_varint(f, poff); // flag
+		    trans->input_count = pull_varint(f, poff);
+	} else {
+			trans->segwit = 0;
+	}
 	trans->input = space_alloc_arr(space,
 				       struct input,
 				       trans->input_count);
@@ -116,6 +139,12 @@ void read_transaction(struct space *space,
 					trans->output_count);
 	for (i = 0; i < trans->output_count; i++)
                read_output(space, f, poff, trans->output + i);
+	if (trans->segwit == 1) {
+			for (i = 0; i < trans->input_count; i++) {
+				read_witness_stack(f, poff);
+			}
+			   
+	}
 	trans->lock_time = pull_u32(f, poff);
 
 	/* Bitcoin uses double sha (it's not quite known why...) */

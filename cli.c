@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
 		     "  %tF: transaction fee paid\n"
 		     "  %tD: transaction bitcoin days destroyed\n"
 		     "  %tX: transaction in hex\n"
+		     "  %tS: transaction is segwit\n"
 		     "Valid input format:\n"
 		     "  %ia: input amount\n"
 		     "  %ih: input hash\n"

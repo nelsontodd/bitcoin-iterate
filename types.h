@@ -55,12 +55,13 @@ struct block_header {
  *
  */
 struct transaction {
-	u32 version;
+    u32 version;
 	varint_t input_count;
 	struct input *input;
 	varint_t output_count;
 	struct output *output;
 	u32 lock_time;
+	u8 segwit;
 
 	/* We calculate these as we read in transaction: */
 	u8 sha256[SHA256_DIGEST_LENGTH];

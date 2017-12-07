@@ -199,6 +199,10 @@ void print_format(const char *format,
       case 'X':
 	dump_tx(t);
 	break;
+      case 'S':
+    printf("%u", t->segwit);
+	break;
+
       default:
 	goto bad_fmt;
       }
