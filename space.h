@@ -18,7 +18,7 @@
  * 
  */
 struct space {
-	char buf[3* 1024 * 1024];
+	char buf[3 * 1024 * 1024];
 	size_t off;
 };
 
@@ -40,7 +40,7 @@ static inline void *space_alloc(struct space *space, size_t bytes)
 {
 	void *p = space->buf + space->off;
 	/* If this fails, enlarge buf[] above */
-	//assert(space->off + bytes <= sizeof(space->buf) && "message");
+	assert(space->off + bytes <= sizeof(space->buf) && "message");
 
 	space->off += bytes;
 	return p;

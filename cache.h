@@ -17,7 +17,7 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
 
 size_t read_blockchain(tal_t *tal_ctx,
 		       bool quiet, bool use_mmap,
-		       bool use_testnet, char *cachedir, char *blockcache,
+		       bool use_testnet, char *cachedir, const char *blockcache,
 		       char **block_fnames,
 		       struct block_map *block_map, struct block **genesis);
 

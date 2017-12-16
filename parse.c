@@ -142,6 +142,7 @@ void read_transaction(struct space *space,
 	if (trans->segwit == 1) {
 			for (i = 0; i < trans->input_count; i++) {
 				read_witness_stack(f, poff);
+				//read_witness(f, poff);
 			}
 			   
 	}

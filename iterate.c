@@ -4,21 +4,22 @@
 /* #include <ccan/take/take.h> */
 /* #include <ccan/short_types/short_types.h> */
 /* #include <ccan/opt/opt.h> */
-#include <ccan/htable/htable_type.h>
+/* #include <ccan/htable/htable_type.h> */
 /* #include <ccan/rbuf/rbuf.h> */
 /* #include <sys/types.h> */
 /* #include <stdbool.h> */
 /* #include <sys/stat.h> */
 #include <stdio.h>
 #include "parse.h"
-#include "space.h"
+/* #include "space.h" */
 #include "block.h"
 #include "blockfiles.h"
-/*#include "utxo.h"*/
+/* #include "utxo.h" */
 #include "cache.h"
-/*#include "utils.h" */ 
+/* #include "utils.h" */ 
 #include "iterate.h"
 
+#define BLOCK_PROGRESS_PERIOD 10000
 
 static void set_heights_and_best(struct block **best, struct block *genesis, struct block_map *block_map)
 {
@@ -79,11 +80,10 @@ static void set_iteration_start(unsigned long block_start, struct block **start,
     struct block *b;
     for (b = genesis; b->height != block_start; b = b->next) {
       if (!b->next)
-	errx(1, "No block start %lu found", block_start);
+		errx(1, "No block start %lu found", block_start);
     }
     *start = b;
   }
-    //*start = NULL; //this shit wasnt set before
 }
 
 void iterate(char *blockdir, char *cachedir,
@@ -149,26 +149,28 @@ void iterate(char *blockdir, char *cachedir,
   for (b = genesis; b; b = b->next) {
     off_t off;
     struct transaction *tx;
-
-    if (b == start) { /* start is not being set correctly*/
+	if (!quiet && b->height % BLOCK_PROGRESS_PERIOD == 0) {
+		fprintf(stderr,"bitcoin-iterate: Iterating over block number %i\n",b->height);
+    }
+    if (b == start) { 
       /* Are we UTXO caching? */
       if (cachedir && needs_utxo) {
-		if (needs_fee) {
-		   /* Save cache for next time. */
-		   write_utxo_cache(&utxo_map, quiet, cachedir, b->sha);
-		} else {
-		   /* We loaded cache, now we calc fee. */
-		   needs_fee = true;
+        if (needs_fee) {
+		  /* Save cache for next time. */
+		  write_utxo_cache(&utxo_map, quiet, cachedir, b->sha);
+        } else {
+		  /* We loaded cache, now we calc fee. */
+		  needs_fee = true;
 		}
       }
-		start = NULL; //was set inisde the brackets, needed to be set here :0
+      start = NULL; 
     }
+
     if (!start && blockfn){
       blockfn(&utxo_map, b);
     }
-    if (!start && progress_marks
-	&& b->height % (best->height / progress_marks)
-	== (best->height / progress_marks) - 1)
+
+    if (!start && progress_marks && b->height % (best->height / progress_marks) == (best->height / progress_marks) - 1)
       fprintf(stderr, ".");
 
     /* Don't read transactions if we don't have to */
@@ -219,14 +221,14 @@ void iterate(char *blockdir, char *cachedir,
 	add_utxo(tal_ctx, &utxo_map, b, &tx[i], i, txoff);
       }
     }
-    if (utxofn && ((b->height % utxo_period) == 0)) {
+    if (!start && utxofn && ((b->height % utxo_period) == 0)) { 
       struct utxo_map_iter it;
       struct utxo *utxo;
       for (utxo = utxo_map_first(&utxo_map, &it);
 	   utxo;
 	   utxo = utxo_map_next(&utxo_map, &it)) {
-	utxofn(&utxo_map, b, last_utxo_block, utxo);
-      }
+		 utxofn(&utxo_map, b, last_utxo_block, utxo);//added !start to supress output unless we have reached start point
+	  }
       last_utxo_block = b;
     }
 		

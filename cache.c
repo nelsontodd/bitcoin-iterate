@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <inttypes.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -21,11 +23,10 @@ bool read_utxo_cache(const tal_t *ctx,
   size_t bytes;
   hex_encode(blockid, SHA256_DIGEST_LENGTH, blockhex, sizeof(blockhex));
   file = path_join(NULL, cachedir, blockhex);
-  fprintf(stderr,"Cache.c file: %s\n",file);
   if (!quiet)
     fprintf(stderr, "bitcoin-iterate: Reading UTXOs from cache at %s\n", file);
   
-  contents = grab_file(file,file);
+  contents = grab_file(file, file);
   if (!contents) {
     tal_free(file);
     return false;
@@ -94,7 +95,7 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
   }
 }
 
-char  * set_blockcache_path(char *blockcache, tal_t *tal_ctx, char *cachedir, char *last_block_fname)
+const char *  construct_blockcache_path(const char *blockcache, tal_t *tal_ctx, char *cachedir, char *last_block_fname)
 {
   blockcache = path_join(tal_ctx,
 			 cachedir,
@@ -102,7 +103,7 @@ char  * set_blockcache_path(char *blockcache, tal_t *tal_ctx, char *cachedir, ch
   return blockcache;
 }
 
-static bool blockcache_is_valid(bool quiet, char *blockcache, char *last_block_fname)
+static bool blockcache_is_valid(bool quiet, const char *blockcache, char *last_block_fname)
 {
   struct stat cache_st, block_st;
   
@@ -151,37 +152,36 @@ static size_t read_blockcache(const tal_t *tal_ctx,
 
 size_t read_blockchain(tal_t *tal_ctx,
 		       bool quiet, bool use_mmap,
-		       bool use_testnet, char *cachedir, char *blockcache,
+		       bool use_testnet, char *cachedir, const char *blockcache,
 		       char **block_fnames,
 		       struct block_map *block_map, struct block **genesis)
 {
   size_t block_count = 0;
+  bool cache_existed = false;
   if (cachedir && tal_count(block_fnames)) {
     size_t last = tal_count(block_fnames) - 1;
     char *last_block_fname = block_fnames[last];
-		blockcache = set_blockcache_path(blockcache, tal_ctx, cachedir, last_block_fname);
+    blockcache = construct_blockcache_path(blockcache, tal_ctx, cachedir, last_block_fname);
     if (blockcache_is_valid(quiet, blockcache, last_block_fname)) {
       block_count = read_blockcache(tal_ctx, quiet,
 				    block_map, blockcache,
 				    genesis, block_fnames);
+	  if (block_count > 0) {
+		cache_existed = true;
+	  }
     }
-	else {
-      block_map_init(block_map);
-      block_count = read_blockfiles(tal_ctx,
-				    use_testnet, quiet, use_mmap,
-				    block_fnames,
-				    block_map, genesis);
-    }
-    if (!*genesis)
-      errx(1, "Could not find a genesis block.");
-  } else{
-      block_map_init(block_map);
-      block_count = read_blockfiles(tal_ctx,
-				    use_testnet, quiet, use_mmap,
-				    block_fnames,
-				    block_map, genesis);
   }
-  if (blockcache) {
+  if (block_count == 0) {
+    block_map_init(block_map);
+    block_count = read_blockfiles(tal_ctx,
+				  use_testnet, quiet, use_mmap,
+				  block_fnames,
+				  block_map, genesis);
+  }
+  if (!*genesis) {
+     errx(1, "Could not find a genesis block.");
+  } 
+  if (blockcache && !cache_existed) {
      write_blockcache(block_map, quiet, cachedir, blockcache);
   }
   return block_count;

@@ -50,6 +50,7 @@ struct block_header {
  * @output_count: Number of outputs
  * @output: Array of outputs
  * @lock_time: Lock time for this transaction
+ * @segwit: Is the transaction segwit or not
  * @sha256: Hash for this transaction
  * @len: Length of this transaction in bytes
  *
