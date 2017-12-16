@@ -149,9 +149,11 @@ void iterate(char *blockdir, char *cachedir,
   for (b = genesis; b; b = b->next) {
     off_t off;
     struct transaction *tx;
-	if (!quiet && b->height % BLOCK_PROGRESS_PERIOD == 0) {
-		fprintf(stderr,"bitcoin-iterate: Iterating over block number %i\n",b->height);
+
+    if (!quiet && (b->height > 0) && (b->height % BLOCK_PROGRESS_PERIOD) == 0) {
+      fprintf(stderr,"bitcoin-iterate: Iterating over block number %i\n",b->height);
     }
+
     if (b == start) { 
       /* Are we UTXO caching? */
       if (cachedir && needs_utxo) {
@@ -227,7 +229,7 @@ void iterate(char *blockdir, char *cachedir,
       for (utxo = utxo_map_first(&utxo_map, &it);
 	   utxo;
 	   utxo = utxo_map_next(&utxo_map, &it)) {
-		 utxofn(&utxo_map, b, last_utxo_block, utxo);//added !start to supress output unless we have reached start point
+		 utxofn(&utxo_map, b, last_utxo_block, utxo);
 	  }
       last_utxo_block = b;
     }

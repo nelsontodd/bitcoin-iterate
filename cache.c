@@ -11,6 +11,8 @@
 #include "cache.h"
 #include "blockfiles.h"
 
+#define UTXO_PROGRESS_PERIOD 100000
+
 bool read_utxo_cache(const tal_t *ctx,
 		     bool quiet,
 		     struct utxo_map *utxo_map,
@@ -37,6 +39,7 @@ bool read_utxo_cache(const tal_t *ctx,
   /* Size UTXO appropriately immediately (slightly oversize). */
   utxo_map_clear(utxo_map);
   utxo_map_init_sized(utxo_map, bytes / sizeof(struct utxo));
+  int utxo_count = 0;
 
   while (bytes) {
     struct utxo *utxo;
@@ -54,8 +57,16 @@ bool read_utxo_cache(const tal_t *ctx,
     memcpy(utxo, contents, size);
     utxo_map_add(utxo_map, utxo);
 
+    utxo_count += 1;
+    if (!quiet && (utxo_count % UTXO_PROGRESS_PERIOD) == 0) {
+      fprintf(stderr, "bitcoin-iterate: Read %i UTXOs from cache\n", utxo_count);
+    }
+
     contents += size;
     bytes -= size;
+  }
+  if (!quiet && (utxo_count % UTXO_PROGRESS_PERIOD) != 0) {
+    fprintf(stderr, "bitcoin-iterate: Read %i UTXOs from cache\n", utxo_count);
   }
   tal_free(file);
   return true;
