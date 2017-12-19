@@ -77,7 +77,7 @@ void add_utxo(const tal_t *tal_ctx,
   utxo = tal_alloc_(tal_ctx, sizeof(*utxo) + (sizeof(utxo->amount[0]) + 1)
 		    * t->output_count, false, TAL_LABEL(struct utxo, ""));
 
-  memcpy(utxo->tx, t->sha256, sizeof(utxo->tx));
+  memcpy(utxo->tx, t->txid, sizeof(utxo->tx));
   utxo->num_outputs = t->output_count;
   utxo->unspent_outputs = spend_count;
   utxo->height = b->height;

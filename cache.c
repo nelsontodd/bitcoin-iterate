@@ -11,8 +11,6 @@
 #include "cache.h"
 #include "blockfiles.h"
 
-#define UTXO_PROGRESS_PERIOD 100000
-
 bool read_utxo_cache(const tal_t *ctx,
 		     bool quiet,
 		     struct utxo_map *utxo_map,
@@ -58,14 +56,10 @@ bool read_utxo_cache(const tal_t *ctx,
     utxo_map_add(utxo_map, utxo);
 
     utxo_count += 1;
-    if (!quiet && (utxo_count % UTXO_PROGRESS_PERIOD) == 0) {
-      fprintf(stderr, "bitcoin-iterate: Read %i UTXOs from cache\n", utxo_count);
-    }
-
-    contents += size;
-    bytes -= size;
+    contents   += size;
+    bytes      -= size;
   }
-  if (!quiet && (utxo_count % UTXO_PROGRESS_PERIOD) != 0) {
+  if (!quiet) {
     fprintf(stderr, "bitcoin-iterate: Read %i UTXOs from cache\n", utxo_count);
   }
   tal_free(file);
@@ -96,6 +90,7 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
     return;
   }
 
+  int utxo_count = 0;
   for (utxo = utxo_map_first(utxo_map, &it);
        utxo;
        utxo = utxo_map_next(utxo_map, &it)) {
@@ -103,6 +98,10 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
       * utxo->num_outputs;
     if (write(fd, utxo, size) != size)
       errx(1, "Short write to %s", file);
+    utxo_count += 1;
+  }
+  if (!quiet) {
+    fprintf(stderr, "bitcoin-iterate: Wrote %i UTXOs to cache\n", utxo_count);
   }
 }
 

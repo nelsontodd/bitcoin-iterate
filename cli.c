@@ -78,12 +78,14 @@ int main(int argc, char *argv[])
 		     "  %bN: block height\n"
 		     "  %bH: block header (hex string)\n"
 		     "Valid transaction, input or output format:\n"
-		     "  %th: transaction hash\n"
+		     "  %th: transaction txid\n"
+		     "  %tw: transaction wtxid\n"
 		     "  %tv: transaction version\n"
 		     "  %ti: transaction input count\n"
 		     "  %to: transaction output count\n"
 		     "  %tt: transaction locktime\n"
-		     "  %tl: transaction length\n"
+		     "  %tl: transaction raw length\n"
+		     "  %tL: transaction virtual length\n"
 		     "  %tN: transaction number\n"
 		     "  %tF: transaction fee paid\n"
 		     "  %tD: transaction bitcoin days destroyed\n"
@@ -188,6 +190,11 @@ int main(int argc, char *argv[])
 	  needs_utxo, utxo_period,
 	  use_mmap,
 	  progress_marks, quiet,
-	  print_block, print_transaction, print_input, print_output, print_utxo);  
+	  (blockfmt  ? print_block       : NULL), 
+	  (txfmt     ? print_transaction : NULL), 
+	  (inputfmt  ? print_input       : NULL), 
+	  (outputfmt ? print_output      : NULL), 
+	  (utxofmt   ? print_utxo        : NULL)
+	  );
   return 0;
 }

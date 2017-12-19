@@ -131,6 +131,8 @@ void iterate(char *blockdir, char *cachedir,
 	   start->height, best->height, block_count);
     if (utxofn) {
       fprintf(stderr, "bitcoin-iterate: Iterating over UTXOs every %u blocks\n", utxo_period);
+    } else {
+      fprintf(stderr, "bitcoin-iterate: Not iterating over UTXOs\n");
     }
   }
   
@@ -145,6 +147,7 @@ void iterate(char *blockdir, char *cachedir,
       fprintf(stderr, "bitcoin-iterate: Did not find valid UTXO cache\n");
   }
 
+  int blocks_iterated = 0;
   /* Now run forwards. */
   for (b = genesis; b; b = b->next) {
     off_t off;
@@ -215,15 +218,19 @@ void iterate(char *blockdir, char *cachedir,
 	/* Coinbase inputs are not real */
 	if (i != 0) {
 	  for (j = 0; j < tx[i].input_count; j++)
-	    release_utxo(&utxo_map,
-			 &tx[i].input[j]);
+	    release_utxo(&utxo_map, &tx[i].input[j]);
 	}
 
 	/* And add this tx's outputs to utxo */
 	add_utxo(tal_ctx, &utxo_map, b, &tx[i], i, txoff);
       }
     }
-    if (!start && utxofn && ((b->height % utxo_period) == 0)) { 
+    
+    if (!start) {
+      blocks_iterated += 1;
+    }
+
+    if (!start && utxofn && ((blocks_iterated % utxo_period) == 0)) { 
       struct utxo_map_iter it;
       struct utxo *utxo;
       for (utxo = utxo_map_first(&utxo_map, &it);

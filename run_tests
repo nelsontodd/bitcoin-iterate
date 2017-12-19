@@ -9,7 +9,7 @@ if [ -z $BLOCKDIR ]; then
     exit 1
 fi
 
-for cmdline_path in $(find $TEST_DIR -iname "*.test"); do
+for cmdline_path in $(find $TEST_DIR -iname "*.test" | sort -n); do
     name=$(echo $(basename $cmdline_path) | sed -r -e 's/\.test//g')
     expected_output=${TEST_DIR}/${name}.output
     actual_output=${OUTPUT_DIR}/${name}.output

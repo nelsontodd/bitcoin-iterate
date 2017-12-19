@@ -168,7 +168,10 @@ void print_format(const char *format,
 	goto bad_fmt;
       switch (c[2]) {
       case 'h':
-	print_hash(t->sha256);
+	print_hash(t->txid);
+	break;
+      case 'w':
+	print_hash(t->wtxid);
 	break;
       case 'v':
 	printf("%u", t->version);
@@ -184,6 +187,9 @@ void print_format(const char *format,
 	break;
       case 'l':
 	printf("%u", t->len);
+	break;
+      case 'L':
+	printf("%u", t->vlen);
 	break;
       case 'N':
 	printf("%zu", txnum);

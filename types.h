@@ -51,22 +51,24 @@ struct block_header {
  * @output: Array of outputs
  * @lock_time: Lock time for this transaction
  * @segwit: Is the transaction segwit or not
- * @sha256: Hash for this transaction
+ * @txid: Hash for this transaction
  * @len: Length of this transaction in bytes
  *
  */
 struct transaction {
-    u32 version;
-	varint_t input_count;
-	struct input *input;
-	varint_t output_count;
-	struct output *output;
-	u32 lock_time;
-	u8 segwit;
+  u32 version;
+  varint_t input_count;
+  struct input *input;
+  varint_t output_count;
+  struct output *output;
+  u32 lock_time;
+  u8 segwit;
 
-	/* We calculate these as we read in transaction: */
-	u8 sha256[SHA256_DIGEST_LENGTH];
-	u32 len;
+  /* We calculate these as we read in transaction: */
+  u8 txid[SHA256_DIGEST_LENGTH];
+  u8 wtxid[SHA256_DIGEST_LENGTH];
+  u32 len;
+  u32 vlen;
 };
 
 /**

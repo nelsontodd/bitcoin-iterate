@@ -20,12 +20,13 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
     struct utxo *utxo;
 
     utxo = utxo_map_get(utxo_map, t->input[i].hash);
-    if (!utxo)
-      errx(1, "Unknown utxo for "SHA_FMT,
+    if (!utxo) {
+      errx(1, "Could not calculate fees, unknown UTXO for "SHA_FMT,
 	   SHA_VALS(t->input[i].hash));
+    }
 
     if (t->input[i].index >= utxo->num_outputs)
-      errx(1, "Invalid utxo output %u for "SHA_FMT,
+      errx(1, "Could not calculate fees, invalid UTXO output %u for "SHA_FMT,
 	   t->input[i].index, SHA_VALS(t->input[i].hash));
     total += utxo->amount[t->input[i].index];
   }
@@ -36,7 +37,7 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
 
   if (!is_coinbase && total < 0)
     errx(1, "Invalid total %"PRIi64" for "SHA_FMT,
-	 total, SHA_VALS(t->sha256));
+	 total, SHA_VALS(t->txid));
   return total;
 }
 
@@ -98,12 +99,13 @@ s64 calculate_bdd(const struct utxo_map *utxo_map,
     struct utxo *utxo;
 
     utxo = utxo_map_get(utxo_map, t->input[i].hash);
-    if (!utxo)
-      errx(1, "Unknown utxo for "SHA_FMT,
+    if (!utxo) {
+      errx(1, "Could not calculate days destroyed, unknown UTXO for "SHA_FMT,
 	   SHA_VALS(t->input[i].hash));
+    }
 
     if (t->input[i].index >= utxo->num_outputs)
-      errx(1, "Invalid utxo output %u for "SHA_FMT,
+      errx(1, "Could not calculate days destroyed, invalid UTXO output %u for "SHA_FMT,
 	   t->input[i].index, SHA_VALS(t->input[i].hash));
 
 
