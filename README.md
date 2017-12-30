@@ -180,7 +180,7 @@ The example C code below (`utxo_summarizer.c`) defines a custom
 function to be run on each UTXO and passes this function into the
 `iterate` API:
 
-```
+```c
 /* utxo_summarizer.c
 
 This code defines a custom function `accumulate_utxo` which is used to
