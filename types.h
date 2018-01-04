@@ -98,6 +98,8 @@ struct input {
 	u32 index; /* output number referred to by above */
 	varint_t script_length;
 	u8 *script;
+	varint_t num_witness;
+    u8 **witness;
 	u32 sequence_number;
 };
 

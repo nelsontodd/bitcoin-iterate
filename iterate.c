@@ -115,7 +115,7 @@ void iterate(char *blockdir, char *cachedir,
 		  quiet, use_mmap,
 		  use_testnet, cachedir, blockcache,
 		  block_fnames,
-		  &block_map, &genesis);
+		  &block_map, &genesis, block_end);
 
   best  = genesis;
   start = genesis;

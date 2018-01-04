@@ -100,8 +100,11 @@ struct file *block_file(char **block_fnames, unsigned int index, bool use_mmap)
   return f + i;
 }
 
-size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_mmap, char **block_fnames, struct block_map *block_map, struct block **genesis)
+size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_mmap, char **block_fnames, struct block_map *block_map, struct block **genesis, size_t *num_misses, unsigned long block_end)
 {
+	check_genesis:
+		if (!genesis)
+			errx(1, "Could not find a genesis block.");
   u32 netmarker;
   if (use_testnet) {
     netmarker = 0x0709110B;
@@ -118,7 +121,7 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
     /* new-style starts from 1, old-style starts from 0 */
     if (!block_fnames[i]) {
       if (i)
-	warnx("Missing block info for %zu", i);
+				warnx("Missing block info for %zu", i);
       continue;
     }
 
@@ -149,12 +152,17 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
       b->height = -1;
       if (!read_block_header(&b->bh, f, &off,
 				     b->sha, netmarker)) {
-	tal_free(b);
-	break;
+				tal_free(b);
+			break;
       }
 
       b->pos = off;
-      add_block(block_map, b, genesis, block_fnames);
+			if (add_block(block_map, b, genesis, block_fnames, &num_misses)) {
+				/* Go 100 past the block they asked
+				* for (avoid minor forks) */
+				if (block_end != -1UL && b->height > block_end + 100)
+					goto check_genesis;
+			}
 
       skip_transactions(&b->bh, block_start, &off);
       if (off > last_discard + CHUNK && f->mmap) {

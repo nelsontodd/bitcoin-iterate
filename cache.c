@@ -142,7 +142,7 @@ static size_t read_blockcache(const tal_t *tal_ctx,
 			      struct block **genesis,
 			      char **block_fnames)
 {
-  size_t i, num;
+  size_t i, num, num_misses = 0;
   struct block *b = grab_file(tal_ctx, blockcache);
 
   if (!b)
@@ -154,7 +154,7 @@ static size_t read_blockcache(const tal_t *tal_ctx,
 
   block_map_init_sized(block_map, num);
   for (i = 0; i < num; i++)
-    add_block(block_map, &b[i], genesis, block_fnames);
+    add_block(block_map, &b[i], genesis, &block_fnames, &num_misses);
 
   return num;
 }
@@ -164,7 +164,7 @@ size_t read_blockchain(tal_t *tal_ctx,
 		       bool quiet, bool use_mmap,
 		       bool use_testnet, char *cachedir, const char *blockcache,
 		       char **block_fnames,
-		       struct block_map *block_map, struct block **genesis)
+		       struct block_map *block_map, struct block **genesis, unsigned long block_end)
 {
   size_t block_count = 0;
   bool cache_existed = false;
@@ -182,14 +182,15 @@ size_t read_blockchain(tal_t *tal_ctx,
     }
   }
   if (block_count == 0) {
-    block_map_init(block_map);
+		block_map_init(block_map);
+		size_t num_misses = 0;
     block_count = read_blockfiles(tal_ctx,
 				  use_testnet, quiet, use_mmap,
 				  block_fnames,
-				  block_map, genesis);
+				  block_map, genesis, num_misses, block_end);
   }
   if (!*genesis) {
-     errx(1, "Could not find a genesis block.");
+     errx(1, "Cache.c, Could not find a genesis block.");
   } 
   if (blockcache && !cache_existed) {
      write_blockcache(block_map, quiet, cachedir, blockcache);

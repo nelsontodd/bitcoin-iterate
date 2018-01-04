@@ -90,6 +90,7 @@ static void read_input(struct transaction *t, struct space *space, struct file *
 	input->index = pull_u32(f, poff);
 	input->script_length = pull_varint(f, poff);
 	input->script = space_alloc(space, input->script_length);
+	input->witness = NULL;
 	pull_bytes(f, poff, input->script, input->script_length);
 	input->sequence_number = pull_u32(f, poff);
 }
@@ -109,28 +110,30 @@ static void read_output(struct transaction *t, struct space *space, struct file 
 
 // FIXME -- this function should attempt to store and/or interpret the
 // witness data
-static void read_witness_stack_item(struct transaction *trans, size_t i, size_t s, struct file *f, off_t *poff)
+static void read_witness_stack_item(u8 *witness, size_t i, size_t s, struct file *f, off_t *poff,struct space *space)
 {
   varint_t num_bytes = pull_varint(f, poff);
-  u8 witness_data[num_bytes];
-  pull_bytes(f, poff, &witness_data, num_bytes);
+  witness = space_alloc(space, num_bytes);
+  pull_bytes(f, poff, witness, num_bytes);
 }
 
-static void read_witness_field(struct transaction *trans, size_t i, struct file *f, off_t *poff)
+static void read_witness_field(struct input *inp, size_t i, struct file *f, off_t *poff,struct space *space)
 {
   size_t s;
-  varint_t stack_count = pull_varint(f, poff);
-  if (stack_count == 0) { return; }
-  for (s=0; s<stack_count;s++) {
-    read_witness_stack_item(trans, i, s, f, poff);
+  inp->num_witness = pull_varint(f, poff);
+  if (inp->num_witness == 0) { return; }
+  inp->witness = space_alloc_arr(space, u8 *,
+				   inp->num_witness);
+  for (s=0; s<inp->num_witness;s++) {
+    read_witness_stack_item(inp->witness[s], i, s, f, poff, space);
   }
 }
 
-static void read_witness(struct transaction *trans, struct file *f, off_t *poff)
+static void read_witness(struct transaction *trans, struct file *f, off_t *poff,struct space *space)
 {
   size_t i;
   for (i=0; i<trans->input_count;i++) {
-    read_witness_field(trans, i, f, poff);
+    read_witness_field(&trans->input[i], i, f, poff, space);
   }
 }
 
@@ -283,7 +286,7 @@ void read_transaction(struct space *space,
 	
 	// 5. witness [only segwit serialization]
 	if (trans->segwit == 1) {
-	  read_witness(trans, f, poff);
+	  read_witness(trans, f, poff, space);
 	  // Update the hash context to just before the lock time, as
 	  // it would have been for a transaction in the "original
 	  // serialization".

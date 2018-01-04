@@ -19,7 +19,7 @@ size_t read_blockchain(tal_t *tal_ctx,
 		       bool quiet, bool use_mmap,
 		       bool use_testnet, char *cachedir, const char *blockcache,
 		       char **block_fnames,
-		       struct block_map *block_map, struct block **genesis);
+		       struct block_map *block_map, struct block **genesis, unsigned long block_end);
 
 void write_blockcache(struct block_map *block_map,
 		      bool quiet,
