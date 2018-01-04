@@ -99,7 +99,7 @@ struct input {
 	varint_t script_length;
 	u8 *script;
 	varint_t num_witness;
-    u8 **witness;
+  u8 **witness;
 	u32 sequence_number;
 };
 
