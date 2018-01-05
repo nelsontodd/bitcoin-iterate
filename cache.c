@@ -154,7 +154,7 @@ static size_t read_blockcache(const tal_t *tal_ctx,
 
   block_map_init_sized(block_map, num);
   for (i = 0; i < num; i++)
-    add_block(block_map, &b[i], genesis, &block_fnames, &num_misses);
+    add_block(block_map, &b[i], genesis, block_fnames, &num_misses);
 
   return num;
 }
