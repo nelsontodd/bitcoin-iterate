@@ -100,18 +100,21 @@ struct file *block_file(char **block_fnames, unsigned int index, bool use_mmap)
   return f + i;
 }
 
-size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_mmap, char **block_fnames, struct block_map *block_map, struct block **genesis, size_t *num_misses, unsigned long block_end)
+size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_mmap, char **block_fnames, struct block_map *block_map, struct block **genesis, unsigned long block_end)
 {
-	check_genesis:
-		if (!genesis)
-			errx(1, "Could not find a genesis block.");
+	/*Read in all the blockfiles, check that they are all valid, and, starting from 
+	 * block 0, try to find the header of the next block. 
+	 * Then, try to add the block to the block map. If these pass, block_count++
+	 */
   u32 netmarker;
   if (use_testnet) {
     netmarker = 0x0709110B;
   } else {
     netmarker = 0xD9B4BEF9;
   }
-
+	
+	block_map_init(block_map);
+	size_t num_misses = 0;
   off_t last_discard;
   size_t i, block_count = 0;
   struct block *b;
@@ -136,15 +139,15 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
 
       block_start = off;
       if (!next_block_header_prefix(f, &off, netmarker)) {
-	if (off != block_start)
-	  warnx("Skipped %lu at end of %s",
-		off - block_start, block_fnames[i]);
-	break;
+				if (off != block_start)
+					warnx("Skipped %lu at end of %s",
+					off - block_start, block_fnames[i]);
+				break;
       }
       if (off != block_start)
-	warnx("Skipped %lu@%lu in %s",
-	      off - block_start, block_start,
-	      block_fnames[i]);
+				warnx("Skipped %lu@%lu in %s",
+					off - block_start, block_start,
+					block_fnames[i]);
 
       block_start = off;
       b = tal(tal_ctx, struct block);
@@ -157,21 +160,26 @@ size_t read_blockfiles(tal_t *tal_ctx , bool use_testnet, bool quiet, bool use_m
       }
 
       b->pos = off;
-			if (add_block(block_map, b, genesis, block_fnames, &num_misses)) {
+			//if block b exists and can be added to the block map
+			if (add_block(block_map, b, genesis, block_fnames, &num_misses)) { 
 				/* Go 100 past the block they asked
 				* for (avoid minor forks) */
-				if (block_end != -1UL && b->height > block_end + 100)
-					goto check_genesis;
+				if (block_end != -1UL && b->height > block_end + 100) {
+					if (!genesis)
+						errx(1, "Could not find a genesis block.");
+					i = tal_count(block_fnames);
+					break;
+					}
 			}
 
       skip_transactions(&b->bh, block_start, &off);
       if (off > last_discard + CHUNK && f->mmap) {
-	size_t len = CHUNK;
-	if ((size_t)last_discard + len > f->len)
-	  len = f->len - last_discard;
-	madvise(f->mmap + last_discard, len,
-		MADV_DONTNEED);
-	last_discard += len;
+				size_t len = CHUNK;
+				if ((size_t)last_discard + len > f->len)
+					len = f->len - last_discard;
+				madvise(f->mmap + last_discard, len,
+					MADV_DONTNEED);
+				last_discard += len;
       }
       block_count++;
     }

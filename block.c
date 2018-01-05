@@ -24,8 +24,9 @@ bool add_block(struct block_map *block_map, struct block *b,
 		      old->pos, old->bh.len);
 		block_map_delkey(block_map, b->sha);
 	}
+	
 	block_map_add(block_map, b);
-	if (is_zero(b->bh.prev_hash)) {
+	if (is_zero(b->bh.prev_hash)) {//so hash of first bh is zero
 		*genesis = b;
 		b->height = 0;
 		*num_misses = 0;
@@ -33,17 +34,17 @@ bool add_block(struct block_map *block_map, struct block *b,
 	}
 
 	/* Optimistically search for previous: blocks usually in rough order */
-	prev = block_map_get(block_map, b->bh.prev_hash);
+	prev = block_map_get(block_map, b->bh.prev_hash); 
 	if (prev) {
 		if (prev->height != -1) {
-			b->height = prev->height + 1;
+			b->height = prev->height + 1; //if previous height is known, this bh is known
 			*num_misses = 0;
 			return true;
 		}
 
 		/* Every 1000 blocks we didn't get height for, try recursing. */
-		if ((*num_misses)++ % 1000 == 0) {
-			if (set_height(block_map, b)) {
+		if ((*num_misses)++ % 1000 == 0) { //iterate num_misses even if statement false
+			if (set_height(block_map, b)) {  //try to set block height if too many blocks have height -1 - important to note that if u miss height for one block u miss it for the following blocks (i think)
 				*num_misses = 0;
 				return true;
 			}

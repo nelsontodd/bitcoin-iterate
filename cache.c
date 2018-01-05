@@ -182,12 +182,10 @@ size_t read_blockchain(tal_t *tal_ctx,
     }
   }
   if (block_count == 0) {
-		block_map_init(block_map);
-		size_t num_misses = 0;
     block_count = read_blockfiles(tal_ctx,
 				  use_testnet, quiet, use_mmap,
 				  block_fnames,
-				  block_map, genesis, num_misses, block_end);
+				  block_map, genesis, block_end);
   }
   if (!*genesis) {
      errx(1, "Cache.c, Could not find a genesis block.");
