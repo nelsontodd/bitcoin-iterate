@@ -1,16 +1,16 @@
 `bitcoin-iterate` is a command-line tool which quickly iterates over
-`bitcoind`'s block files and prints the data you ask it for.
+`bitcoind` block files and prints data about them.
 
 # Installation
 
-Start by cloning this repository:
+Clone this repository:
 
 ```
 $ git clone https://github.com/unchained-capital/bitcoin-iterate
 $ cd bitcoin-iterate
 ```
 
-Now compile the `bitcoin-iterate` program:
+Compile  the `bitcoin-iterate` program:
 
 ```
 $ make
@@ -40,6 +40,20 @@ You’ll see several general options, but the most important are
 * `--cache` is a directory in which to write temporary data on the
   first iteration which speeds up subsequent iterations (ensure that
   `bitcoin-iterate` can write to this directory).
+
+## Dependencies
+
+This repository does not include OpenSSL which is required to compile
+and run the `bitcoin-iterate` program.  Ensure you have installed
+OpenSSL.
+
+If you have a custom location for OpenSSL (e.g. - you are compiling on
+a more recent Macbook), you can pass the appropriate include directory
+via:
+
+```
+$ make -e COMPILER_FLAGS='-I /path/to/your/openssl/includes'
+```
 
 # Usage
 
