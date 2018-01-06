@@ -1,22 +1,9 @@
 #include <ccan/err/err.h>
-/* #include <ccan/tal/tal.h> */
-/* #include <ccan/tal/path/path.h> */
-/* #include <ccan/take/take.h> */
-/* #include <ccan/short_types/short_types.h> */
-/* #include <ccan/opt/opt.h> */
-/* #include <ccan/htable/htable_type.h> */
-/* #include <ccan/rbuf/rbuf.h> */
-/* #include <sys/types.h> */
-/* #include <stdbool.h> */
-/* #include <sys/stat.h> */
 #include <stdio.h>
 #include "parse.h"
-/* #include "space.h" */
 #include "block.h"
 #include "blockfiles.h"
-/* #include "utxo.h" */
 #include "cache.h"
-/* #include "utils.h" */ 
 #include "iterate.h"
 
 #define BLOCK_PROGRESS_PERIOD 10000
@@ -104,7 +91,6 @@ void iterate(char *blockdir, char *cachedir,
   bool needs_fee;
   struct block *b, *best = NULL, *genesis = NULL, *start = NULL, *last_utxo_block = NULL;
   struct block_map block_map;
-  char *blockcache = NULL;
   struct utxo_map utxo_map;
   struct space space;
   static char **block_fnames;
@@ -113,7 +99,7 @@ void iterate(char *blockdir, char *cachedir,
 
   block_count = read_blockchain(tal_ctx,
 		  quiet, use_mmap,
-		  use_testnet, cachedir, blockcache,
+		  use_testnet, cachedir,
 		  block_fnames,
 		  &block_map, &genesis, block_end);
 
@@ -141,7 +127,7 @@ void iterate(char *blockdir, char *cachedir,
   needs_fee = needs_utxo;
   /* Do we have cache utxo? */
   if (cachedir && start && needs_utxo) {
-    if (read_utxo_cache(tal_ctx, quiet, &utxo_map, cachedir, start->sha)) {
+    if (read_utxo_cache(tal_ctx, quiet, &utxo_map, cachedir, start->id)) {
       needs_fee = false;
     } else if (!quiet)
       fprintf(stderr, "bitcoin-iterate: Did not find valid UTXO cache\n");
@@ -162,7 +148,7 @@ void iterate(char *blockdir, char *cachedir,
       if (cachedir && needs_utxo) {
         if (needs_fee) {
 		  /* Save cache for next time. */
-		  write_utxo_cache(&utxo_map, quiet, cachedir, b->sha);
+		  write_utxo_cache(&utxo_map, quiet, cachedir, b->id);
         } else {
 		  /* We loaded cache, now we calc fee. */
 		  needs_fee = true;

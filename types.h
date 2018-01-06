@@ -17,6 +17,7 @@
 
 /**
  * block_header - Block header
+ * 
  * @D9B4BEF9: Netmarker
  * @len: Length of block in bytes
  * @version: Bitcoin protocol version
@@ -43,16 +44,39 @@ struct block_header {
 };
 
 /**
+ * block - A single bitcoin block
+ *
+ * @id: The block ID (hash as an integer)
+ * @height: Height in the blockchain (-1 for not-yet-known)
+ * @filenum: Which block file index contained this block
+ * @pos: The position within this block's file of its first transaction
+ * @next: pointer to the next block struct in the blockchain
+ * @bh: this block's header
+ *
+ */
+struct block {
+	u8 id[SHA256_DIGEST_LENGTH];
+	s32 height;
+	unsigned int filenum;
+	off_t pos;
+	struct block *next;
+	struct block_header bh;
+};
+
+/**
  * transaction - A single bitcoin transaction
+ * 
  * @version: Bitcoin protocol version
  * @input_count: Number of inputs
  * @input: Array of inputs
  * @output_count: Number of outputs
  * @output: Array of outputs
  * @lock_time: Lock time for this transaction
- * @segwit: Is the transaction segwit or not
+ * @segwit: Is the transaction segwit
  * @txid: Hash for this transaction
- * @len: Length of this transaction in bytes
+ * @wtxid: Segwit hash for this transaction
+ * @total_len: Total length of this transaction (bytes)
+ * @non_swlen: Total length of this transaction without segwit data (bytes)
  *
  */
 struct transaction {
@@ -64,15 +88,15 @@ struct transaction {
   u32 lock_time;
   u8 segwit;
 
-  /* We calculate these as we read in transaction: */
   u8 txid[SHA256_DIGEST_LENGTH];
   u8 wtxid[SHA256_DIGEST_LENGTH];
-  u32 len;
-  u32 vlen;
+  u32 total_len;
+  u32 non_swlen;
 };
 
 /**
  * output - A single output from a particular bitcoin transaction
+ * 
  * @amount: The number of Satoshis for this output
  * @script_length: The length of this output's script
  * @script: This output's script
@@ -86,7 +110,8 @@ struct output {
 
 /**
  * input - A single input from a particular bitcoin transaction
- * @hash: The hash of the transaction containing the output this input is spending
+ * 
+ * @txid: The hash of the transaction containing the output this input is spending
  * @index: The index of the output in the transaction this input is spending
  * @script_length: The length of this input's script
  * @script: This input's script
@@ -94,56 +119,40 @@ struct output {
  *
  */
 struct input {
-	u8 hash[SHA256_DIGEST_LENGTH];
+	u8 txid[SHA256_DIGEST_LENGTH];
 	u32 index; /* output number referred to by above */
 	varint_t script_length;
 	u8 *script;
 	varint_t num_witness;
-  u8 **witness;
+	u8 **witness;
 	u32 sequence_number;
 };
-
-struct block {
-	u8 sha[SHA256_DIGEST_LENGTH];
-	s32 height; /* -1 for not-yet-known */
-	/* Where is it */
-	unsigned int filenum;
-	/* Position of first transaction */
-	off_t pos;
-	/* So we can iterate forwards. */
-	struct block *next;
-	/* Bitcoin block header. */
-	struct block_header bh;
-};
  
+/**
+ * utxo -- A group of outputs created by a single transaction.
+ *
+ * @txid: hash of the transaction which created these UTXOs
+ * @timestamp: UNIX timestamp of the transaction
+ * @height: the block height in which the transaction was mined
+ * @txnum: the index of the transaction within the block
+ * @num_outputs: the number of outputs
+ * @unspent_outputs: the number of unspent outputs (UTXOs)
+ * @unspent: the total amount of Satoshis across all unspent outputs
+ * @spent: the total amount of Satoshis across all spent outputs
+ * @amount: array of output amounts
+ * @output_types: array of guesses at output types
+ * 
+ */
 struct utxo {
-	/* txid */
-	u8 tx[SHA256_DIGEST_LENGTH];
-
-	/* Timestamp. */
+	u8 txid[SHA256_DIGEST_LENGTH];
 	u32 timestamp;
-
-	/* Height. */
 	unsigned int height;
-
-	/* txindex within block. */
 	unsigned int txnum;
-
-	/* Number of outputs. */
 	u32 num_outputs;
-
-	/* Reference count for this tx. */
 	u32 unspent_outputs;
-
-        /* Total amount unspent. */
         u64 unspent;
-  
-        /* Total amount spent. */
         u64 spent;
-
-	/* Amount for each output. */
 	u64 amount[];
-  
 	/* Followed by a char per output for UNKNOWN/PAYMENT/CHANGE */
 };
 
@@ -160,10 +169,5 @@ struct utxo {
 #define UNKNOWN_OUTPUT 0
 #define PAYMENT_OUTPUT 1
 #define CHANGE_OUTPUT  2
-
-struct block *new_block();
-struct block_header *new_block_header();
-void free_block(const tal_t *block);
-void free_block_header(const tal_t *block_header);
 
 #endif /* BITCOIN_PARSE_TYPES_H */

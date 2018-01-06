@@ -4,8 +4,6 @@
 #include <ccan/err/err.h>
 #include "calculations.h"
 
-/* This is kind of silly, since they can print it and sum it
- * themselves.  But convenient though... */
 s64 calculate_fees(const struct utxo_map *utxo_map,
 		   const struct transaction *t,
 		   bool is_coinbase)
@@ -19,15 +17,15 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
   for (i = 0; i < t->input_count; i++) {
     struct utxo *utxo;
 
-    utxo = utxo_map_get(utxo_map, t->input[i].hash);
+    utxo = utxo_map_get(utxo_map, t->input[i].txid);
     if (!utxo) {
       errx(1, "Could not calculate fees, unknown UTXO for "SHA_FMT,
-	   SHA_VALS(t->input[i].hash));
+	   SHA_VALS(t->input[i].txid));
     }
 
     if (t->input[i].index >= utxo->num_outputs)
       errx(1, "Could not calculate fees, invalid UTXO output %u for "SHA_FMT,
-	   t->input[i].index, SHA_VALS(t->input[i].hash));
+	   t->input[i].index, SHA_VALS(t->input[i].txid));
     total += utxo->amount[t->input[i].index];
   }
 
@@ -70,60 +68,72 @@ static void mul_and_add(u64 *over, u64 *base, u64 l, u64 r)
   *base = (b << 32) | c;
 }
 
-s64 calculate_bdc(const struct utxo *u, struct block *current_block, struct block *last_utxo_block)
+s64 calculate_bdc(const struct utxo *u, 
+		  const u32 current_timestamp, 
+		  const u32 last_timestamp)
 {
-  u32 interval = (last_utxo_block ? (current_block->bh.timestamp - last_utxo_block->bh.timestamp) : 0);
-  u32 utxo_age = (current_block->bh.timestamp - u->timestamp);
-  u64 total_over = 0;
-  u64 total_base = 0;
-  mul_and_add(&total_over, &total_base, u->unspent, (utxo_age <= interval) ? utxo_age : interval);
-  /* we have satoshi-seconds, convert to satoshi days by dividing by */
-  /* 86400 */
-  if (total_over >= 86400/2)
-    return -2; /* overflow! */
-  return (((total_over << 47) / 86400) << 17) + (total_base / 86400);
+	u32 interval   = (last_timestamp ? (current_timestamp - last_timestamp) : 0);
+	u32 utxo_age   = (current_timestamp - u->timestamp);
+	u64 total_over = 0;
+	u64 total_base = 0;
+	mul_and_add(&total_over, &total_base, u->unspent, (utxo_age <= interval) ? utxo_age : interval);
+	/* we have satoshi-seconds, convert to satoshi days by dividing by */
+	/* 86400 */
+	if (total_over >= 86400/2)
+		return -2; /* overflow! */
+	return (((total_over << 47) / 86400) << 17) + (total_base / 86400);
 }
 
 s64 calculate_bdd(const struct utxo_map *utxo_map,
 		  const struct transaction *t,
 		  bool is_coinbase, u32 timestamp)
 {
-  size_t i;
-  u64 total_over = 0;
-  u64 total_base = 0;
+	size_t i;
+	u64 total_over = 0;
+	u64 total_base = 0;
+	
+	if (is_coinbase)
+	  return 0;
 
-  if (is_coinbase)
-    return 0;
+	for (i = 0; i < t->input_count; i++) {
+		struct utxo *utxo;
 
-  for (i = 0; i < t->input_count; i++) {
-    struct utxo *utxo;
+		utxo = utxo_map_get(utxo_map, t->input[i].txid);
+		if (!utxo) {
+			errx(1, "Could not calculate days destroyed, unknown UTXO for "SHA_FMT,
+			     SHA_VALS(t->input[i].txid));
+		}
 
-    utxo = utxo_map_get(utxo_map, t->input[i].hash);
-    if (!utxo) {
-      errx(1, "Could not calculate days destroyed, unknown UTXO for "SHA_FMT,
-	   SHA_VALS(t->input[i].hash));
-    }
-
-    if (t->input[i].index >= utxo->num_outputs)
-      errx(1, "Could not calculate days destroyed, invalid UTXO output %u for "SHA_FMT,
-	   t->input[i].index, SHA_VALS(t->input[i].hash));
+		if (t->input[i].index >= utxo->num_outputs)
+			errx(1, "Could not calculate days destroyed, invalid UTXO output %u for "SHA_FMT,
+			     t->input[i].index, SHA_VALS(t->input[i].txid));
 
 
-    mul_and_add(&total_over, &total_base,
-		utxo->amount[t->input[i].index],
-		timestamp > utxo->timestamp ? timestamp - utxo->timestamp : 0);
-  }
+		mul_and_add(&total_over, &total_base,
+			    utxo->amount[t->input[i].index],
+			    timestamp > utxo->timestamp ? timestamp - utxo->timestamp : 0);
+	}
 
-  /* we have satoshi-seconds, convert to satoshi days by dividing by
-   * 86400 */
-  if (total_over >= 86400/2)
-    return -2; /* overflow! */
-  return (((total_over << 47) / 86400) << 17) + (total_base / 86400);
+	/* we have satoshi-seconds, convert to satoshi days by dividing by
+	 * 86400 */
+	if (total_over >= 86400/2)
+		return -2; /* overflow! */
+	return (((total_over << 47) / 86400) << 17) + (total_base / 86400);
 }
 
 #define BTCS_PER_SATOSHI 1E-8
 
 double to_btc(s64 satoshis)
 {
-  return ((double) ((s64) satoshis)) * BTCS_PER_SATOSHI;
+	return ((double) ((s64) satoshis)) * BTCS_PER_SATOSHI;
+}
+
+u32 segwit_length(const struct transaction *t)
+{
+	return ((t->total_len + (3 * t->non_swlen) + 3) / 4);
+}
+
+u32 segwit_weight(const struct transaction *t)
+{
+	return (t->total_len + (3 * t->non_swlen));
 }

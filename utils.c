@@ -5,9 +5,16 @@
 
 char *opt_set_hash(const char *arg, u8 *h)
 {
-  if (!hex_decode(arg, strlen(arg), h, SHA256_DIGEST_LENGTH))
-    return "Bad hex string (needs 64 hex chars)";
-  return NULL;
+	size_t i;
+	u8 hash[SHA256_DIGEST_LENGTH];
+
+	if (!hex_decode(arg, strlen(arg), hash, SHA256_DIGEST_LENGTH))
+		return "Bad hex string (needs 64 hex chars)";
+
+	/* Backwards endian is the Bitcoin Way */
+	for (i = 0; i < SHA256_DIGEST_LENGTH; i++)
+		h[i] = hash[SHA256_DIGEST_LENGTH-i-1];
+	return NULL;
 }
 
 bool is_zero(u8 hash[SHA256_DIGEST_LENGTH])

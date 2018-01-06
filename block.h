@@ -5,7 +5,25 @@
 #include "utils.h"
 #include "types.h"
 
-/* Defines the block_map and the following methods:
+/**
+ * Return the SHA256 hash for the given block.
+ *
+ * This function is used to match blocks to keys in the block_map.
+ *
+ *  @param b -- pointer to a block struct
+ */
+const u8 *keyof_block_map(const struct block *b);
+
+/**
+ * Does the given block match the given key/hash?
+ *
+ *  @param b   -- pointer to a block struct
+ *  @param key -- pointer to a SHA256 block hash
+ */
+bool block_eq(const struct block *b, const u8 *key);
+
+/**
+ * Defines the block_map and the following methods:
  *
  *   block_map_init
  *   block_map_clear
@@ -20,22 +38,8 @@
  */
 HTABLE_DEFINE_TYPE(struct block, keyof_block_map, hash_sha, block_eq, block_map);
 
-/* Return the SHA256 hash for the given block.
- *
- * This function is used to match blocks to keys in the block_map.
- *
- *  @param b -- pointer to a block struct
- */
-const u8 *keyof_block_map(const struct block *b);
-
-/* Does the given block match the given key/hash?
- *
- *  @param b   -- pointer to a block struct
- *  @param key -- pointer to a SHA256 block hash
- */
-bool block_eq(const struct block *b, const u8 *key);
-
-/* Add the given block to the block map.
+/**
+ * Add the given block to the block map.
  *
  * If the block already exists in the block_map, it will be replaced
  * by the given block (and a warning generated).
@@ -60,7 +64,8 @@ bool block_eq(const struct block *b, const u8 *key);
  */
 bool add_block(struct block_map *block_map, struct block *b, struct block **genesis, char **block_fnames, size_t *num_misses);
 
-/* Sets the heights of blocks in the block map if possible.
+/**
+ * Sets the heights of blocks in the block map if possible.
  *
  * Finds the last block with a known height then iterates forward
  * setting the height of the rest of the blocks.

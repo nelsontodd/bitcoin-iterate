@@ -4,12 +4,12 @@
 
 const u8 *keyof_utxo(const struct utxo *utxo)
 {
-  return utxo->tx;
+  return utxo->txid;
 }
 
 bool utxohash_eq(const struct utxo *utxo, const u8 *key)
 {
-  return memcmp(&utxo->tx, key, sizeof(utxo->tx)) == 0;
+  return memcmp(&utxo->txid, key, sizeof(utxo->txid)) == 0;
 }
 
 bool is_unspendable(const struct output *o)
@@ -77,7 +77,7 @@ void add_utxo(const tal_t *tal_ctx,
   utxo = tal_alloc_(tal_ctx, sizeof(*utxo) + (sizeof(utxo->amount[0]) + 1)
 		    * t->output_count, false, TAL_LABEL(struct utxo, ""));
 
-  memcpy(utxo->tx, t->txid, sizeof(utxo->tx));
+  memcpy(utxo->txid, t->txid, sizeof(utxo->txid));
   utxo->num_outputs = t->output_count;
   utxo->unspent_outputs = spend_count;
   utxo->height = b->height;
@@ -98,9 +98,9 @@ void release_utxo(struct utxo_map *utxo_map,
 {
   struct utxo *utxo;
 
-  utxo = utxo_map_get(utxo_map, i->hash);
+  utxo = utxo_map_get(utxo_map, i->txid);
   if (!utxo)
-    errx(1, "Unknown utxo for "SHA_FMT, SHA_VALS(i->hash));
+    errx(1, "Unknown utxo for "SHA_FMT, SHA_VALS(i->txid));
 
   utxo->spent   += utxo->amount[i->index];
   utxo->unspent -= utxo->amount[i->index];

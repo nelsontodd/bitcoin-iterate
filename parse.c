@@ -86,7 +86,7 @@ static void pull_hash(struct file *f, off_t *poff, u8 dst[32])
 static void read_input(struct transaction *t, struct space *space, struct file *f, off_t *poff,
 		       struct input *input)
 {
-	pull_hash(f, poff, input->hash);
+	pull_hash(f, poff, input->txid);
 	input->index = pull_u32(f, poff);
 	input->script_length = pull_varint(f, poff);
 	input->script = space_alloc(space, input->script_length);
@@ -145,11 +145,10 @@ static void read_witness(struct transaction *trans, struct file *f, off_t *poff,
  *  Appends contents of file @f between offsets @context_off and @poff
  *  to the given hash @context.
  *
- *  Increments @original_serialization_length by the number of bytes
- *  read and sets @context_off to the current position of @poff.
+ *  Sets @context_off to the current position of @poff.
  *
  */
-void append_to_hash_context(SHA256_CTX *context, off_t *context_off, u32 *original_serialization_length, struct file *f, off_t *poff)
+void append_to_hash_context(SHA256_CTX *context, off_t *context_off, struct file *f, off_t *poff)
 {
 	  if (likely(f->mmap)) {
 	    SHA256_Update(context, f->mmap + *context_off, *poff - *context_off);
@@ -159,7 +158,6 @@ void append_to_hash_context(SHA256_CTX *context, off_t *context_off, u32 *origin
 	    SHA256_Update(context, buf, *poff - *context_off);
 	    tal_free(buf);
 	  }
-	  *original_serialization_length += (*poff - *context_off);
 	  *context_off = *poff;
 }
 
@@ -211,14 +209,13 @@ void read_transaction(struct space *space,
 {
 	size_t i;
 
-	// Track where the transaction started so we can use this
-	// position later to calculate the total (raw) length on disk.
-	off_t start = *poff;
-
-	// Initialize a SHA256 hash context for the "original
-	// serialization" above.
+	// Initialize a SHA256 hash context
 	SHA256_CTX context;
 	SHA256_Init(&context);
+
+	// Track where the transaction started so we can use this
+	// position later to calculate the total length on disk.
+	off_t start = *poff;
 
 	// Track the position to start adding to the hash context
 	// from.  This separate offset is used to skip over segregated
@@ -226,13 +223,12 @@ void read_transaction(struct space *space,
 	// calculate the TXID.
 	off_t context_off  = *poff;
 
-	// Track the size of the "original serialization".  This
-	// separate counter is used to exclude segregated witness data
-	// so the "original serialization" length can be tracked.  The
-	// original serialization length and the actual serialization
-	// length (in the new, "segwit serialization") are required to
-	// calculate the virtual size of the transaction.
-	u32 original_serialization_length;
+	// Track the size of the "non-segwit" or "original"
+	// serialization.  This separate counter is used to exclude
+	// segregated witness data.  The non-segwit serialization
+	// length and the actual serialization length are required to
+	// calculate the virtual length/weight of the transaction.
+	trans->non_swlen = 0;
 
 	//
 	// == Now start incrementally processing & hashing transaction fields ==
@@ -240,11 +236,12 @@ void read_transaction(struct space *space,
 
 	// 1. Version
 	trans->version = pull_u32(f, poff);
-	append_to_hash_context(&context, &context_off, &original_serialization_length, f, poff);
+	trans->non_swlen += (*poff - context_off);
+	append_to_hash_context(&context, &context_off, f, poff);
 
 	// 2. One of
 	//
-	//      input_count                        [original serialization]
+	//      input_count                        [non-segwit serialization]
 	//      (marker|flag|input_count)          [segwit serialization]
 	//      
 	trans->input_count = pull_varint(f, poff);
@@ -257,12 +254,12 @@ void read_transaction(struct space *space,
 	  };
 	  // Update the hash context to just before the transaction
 	  // input count, as it would have been for a transaction in
-	  // the "original serialization".
+	  // the non-segwit serialization.
 	  context_off = *poff;
 	  // And now pull the transaction input count itself, leaving
 	  // the file pointer poff in the same (relative) position it
 	  // would have had at this point for a transaction in the
-	  // "original serialization" -- just before the array of
+	  // non-segwit serialization -- just before the array of
 	  // transaction inputs.
 	  trans->input_count = pull_varint(f, poff);
 	} else {
@@ -282,48 +279,29 @@ void read_transaction(struct space *space,
 	for (i = 0; i < trans->output_count; i++) {
 	  read_output(trans, space, f, poff, trans->output + i);
 	}
-	append_to_hash_context(&context, &context_off, &original_serialization_length, f, poff);
+	trans->non_swlen += (*poff - context_off);
+	append_to_hash_context(&context, &context_off, f, poff);
 	
 	// 5. witness [only segwit serialization]
 	if (trans->segwit == 1) {
 	  read_witness(trans, f, poff, space);
 	  // Update the hash context to just before the lock time, as
-	  // it would have been for a transaction in the "original
-	  // serialization".
+	  // it would have been for a transaction in the non-segwit
+	  // serialization.
 	  context_off = *poff;
 	}
 
 	// 6. Lock time
 	trans->lock_time = pull_u32(f, poff);
-	append_to_hash_context(&context, &context_off, &original_serialization_length, f, poff);
+	trans->non_swlen += (*poff - context_off);
+	append_to_hash_context(&context, &context_off, f, poff);
 
 	// == Now calculate properties which depend upon serialization ==
 
-	// Length -- the "raw" length is just the number of bytes of
-	// the serialization, regardless of whether it was "original"
-	// or "segwit".
-	trans->len = *poff - start;
-
-	// Virtual Length -- 
-	if (trans->segwit == 1) {
-	  // vsize of a transaction equals 3 times the size with
-	  // original serialization, plus the size with new
-	  // serialization, divide the result by 4 and round up to the
-	  // next integer.
-	  //
-	  // For example, if a transaction is 200 bytes with new
-	  // serialization, and becomes 99 bytes with marker, flag,
-	  // and witness removed, the vsize is (99 * 3 + 200) / 4 =
-	  // 125 with round up.
-	  u32 numerator = ((3 * original_serialization_length) + trans->len);
-	  if ((numerator % 4) == 0) {
-	    trans->vlen = numerator / 4;
-	  } else {
-	    trans->vlen = (numerator / 4) + 1;
-	  }
-	} else {
-	  trans->vlen = trans->len;
-	}
+	// Length -- the total length is just the number of bytes of
+	// the serialization, regardless of whether it was non-segwit
+	// or segwit.
+	trans->total_len = *poff - start;
 
 	// TXID
 	// 
@@ -343,9 +321,9 @@ void read_transaction(struct space *space,
 	  SHA256_Init(&context);
 	  context_off = start;
 	  // This function will needlessly and incorrectly modify
-	  // context_off and original_serialization_length but we're
-	  // done with them at this point, so that's actually OK...
-	  append_to_hash_context(&context, &context_off, &original_serialization_length, f, poff);
+	  // context_off but we're done with it at this point, so
+	  // that's actually OK...
+	  append_to_hash_context(&context, &context_off, f, poff);
 	  // Store single hash
 	  SHA256_Final(trans->wtxid, &context);
 	  // Now create double hash
