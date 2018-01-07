@@ -216,16 +216,18 @@ void iterate(char *blockdir, char *cachedir,
       blocks_iterated += 1;
     }
 
-    if (!start && utxofn && ((blocks_iterated % utxo_period) == 0)) { 
+    if (!start && utxofn && last_utxo_block && ((blocks_iterated % utxo_period) == 0)) { 
       struct utxo_map_iter it;
       struct utxo *utxo;
       for (utxo = utxo_map_first(&utxo_map, &it);
-	   utxo;
-	   utxo = utxo_map_next(&utxo_map, &it)) {
-		 utxofn(&utxo_map, b, last_utxo_block, utxo);
-	  }
-      last_utxo_block = b;
+				 utxo;
+				 utxo = utxo_map_next(&utxo_map, &it)) {
+		 		 		utxofn(&utxo_map, b, last_utxo_block, utxo);
+	  		}
     }
+		if (!start) {
+    	last_utxo_block = b;
+		}
 		
   }
 }

@@ -18,8 +18,8 @@ static void print_hash(const u8 *hash)
 void print_reversed_hash(const u8 *hash)
 {
 	u8 reversed[32];
-
-	for(int i=0;i<32;++i) {
+	int i; 
+	for(i=0;i<32;++i) {
 		reversed[i]=hash[32-i-1];
 	}
 	print_hash(reversed);
@@ -320,33 +320,33 @@ void print_format(const char *format,
       if (!u)
 	goto bad_fmt;
       switch (c[2]) {
-      case 'h':
-	print_reversed_hash(u->txid);
+			case 'h':
+			print_reversed_hash(u->txid);
 	break;
-      case 's':
+			case 's':
 	printf("%u", u->timestamp);
 	break;
-      case 'N':
+			case 'N':
 	printf("%u", u->height);
 	break;
-      case 'c':
+			case 'c':
 	printf("%u", u->num_outputs);
 	break;
-      case 'u':
+			case 'u':
 	printf("%u", u->unspent_outputs);
 	break;
-      case 'd':
+			case 'd':
 	printf("%u", u->num_outputs - u->unspent_outputs);
 	break;
-      case 'U':
+			case 'U':
 	printf("%"PRIu64, u->unspent);
 	break;
-      case 'D':
+			case 'D':
 	printf("%"PRIu64, u->spent);
 	break;
-      case 'C':
+			case 'C':
 	printf("%"PRIi64,
-	       calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
+		 calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
 	break;
       default:
 	goto bad_fmt;
