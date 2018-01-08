@@ -33,13 +33,13 @@ OPTIONS
 
   %bl: block length
   %bv: block version
-  %bp: block prev hash as a 64-character little-endian hex string
+  %bp: block prev hash as a 64-character big-endian hex string
   %bm: block merkle hash as a 64-character little-endian hex string
   %bs: block timestamp
   %bt: block target
   %bn: block nonce
   %bc: block transaction count
-  %bh: block hash as a 64-character little-endian hex string
+  %bh: block hash as a 64-character big-endian hex string
   %bN: block height (0 == genesis)
   %bH: block header as a hex string
 
@@ -47,13 +47,17 @@ OPTIONS
   Print out the format string for each transaction (in the order they
   are in the block).  All the block escape codes are valid, and the
   following additional ones:
-
-  %th: transaction hash as a 64-character little-endian hex string
+  %tS: transaction is/is not segwit
+  %th: transaction hash as a 64-character big-endian hex string
+	%tH: transaction wtxid (big-endian)
   %tv: transaction version
   %ti: transaction input count
   %to: transaction output count
   %tt: transaction locktime
-  %tl: transaction length
+	%tL: transaction total length (bytes)
+  %tl: transaction virtual length (vbytes)
+	%tn: transaction non segwit length (bytes)
+	%tw: transaction weight (sipa)
   %tF: transaction fee paid by block (negative for coinbase reward)
   %tN: transaction number within block
   %tD: transaction bitcoin days destroyed (by block times)
@@ -64,7 +68,8 @@ OPTIONS
   they are in the transaction).  All the block and transaction escape
   codes are valid, and the following additional ones:
 
-  %ih: input hash as a 64-character-little-endian hex string
+  %ia: input amount
+	%ih: input hash as a 64-character-little-endian hex string
   %ii: input index
   %il: input script length
   %is: input script as a hex string
@@ -73,6 +78,7 @@ OPTIONS
   %iB: input UTXO block number (0 for coinbase)
   %iT: input UTXO transaction number (-1 for coinbase)
   %iX: input as a hex string
+	%ip: input payment guess: same (2) or different (1) owner, or (0) unknown
 
 *--output*='FORMAT'::
   Print out the format string for each transaction output (in the order
@@ -86,6 +92,20 @@ OPTIONS
   %oU: output is unspendable (0==spendable)
   %oX: output as a hex string
 
+*--utxo*='FORMAT'::
+  Print out the format string for each output group (in the order
+  they are in the transaction).  All the block escape
+  codes are valid, and the following additional ones:
+
+	%uh: utxo transaction hash
+	%us: utxo timestamp
+	%uN: utxo height
+	%uc: utxo output count
+	%uu: utxo unspent output count
+	%ud: utxo spent output count
+	%uU: utxo unspent amount
+	%uD: utxo spent amount
+	%uC: utxo bitcoin days created
 *--end-hash*::
   Stop iteration at this block hash.
 
@@ -131,14 +151,19 @@ EXAMPLES
 bitcoin-iterate
 ===================================================================
 
-.Print out the height and length of every block, separated by a space
+.Print out the height of the first ten blocks
 ===================================================================
-bitcoin-iterate --block='%bh %bl'
+bitcoin-iterate --block 'BLOCK %bN' --end 10
 ===================================================================
 
-.Print out the block height and length of every transaction
+.Print out the height of the next ten blocks using start flag
 ===================================================================
-bitcoin-iterate --tx='height=%bh length=%tl'
+--block '%bN' --end 20 --start 10
+===================================================================
+
+.Print out all block data for first ten blocks
+===================================================================
+bitcoin-iterate --block 'LENGTH %bl VERSION %bv PREV HASH %bp MERKLE %bm TIMESTAMP %bs TARGET %bt NONCE %bn TX COUNT %bc HASH %bh HEIGHT %bN HEADER %bH' --end 10
 ===================================================================
 
 .Print out the length of every scriptSig (input script)
@@ -154,6 +179,11 @@ bitcoin-iterate --output=%ol
 .Print out <block number>,<transaction hash>,<script> for each output
 ===================================================================
 bitcoin-iterate --output=%bn,%th,%os
+===================================================================
+
+.Print out <block number>,<transaction hash>,<is_segwit> for seven blocks
+===================================================================
+bitcoin-iterate --transaction 'BLOCK %bN HASH %th SEGWIT %tS' --start 481820 --end 481827 | grep 'SEGWIT 1'
 ===================================================================
 
 NOTES

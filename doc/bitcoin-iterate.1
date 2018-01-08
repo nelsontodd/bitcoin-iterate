@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: bitcoin-iterate
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/04/2018
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 01/08/2018
 .\"    Manual: \ \&
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "BITCOIN\-ITERATE" "1" "01/04/2018" "\ \&" "\ \&"
+.TH "BITCOIN\-ITERATE" "1" "01/08/2018" "\ \&" "\ \&"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,13 +50,13 @@ Print out the format string for each block\&. Escape codes are prefixed with
 .nf
 %bl: block length
 %bv: block version
-%bp: block prev hash as a 64\-character little\-endian hex string
+%bp: block prev hash as a 64\-character big\-endian hex string
 %bm: block merkle hash as a 64\-character little\-endian hex string
 %bs: block timestamp
 %bt: block target
 %bn: block nonce
 %bc: block transaction count
-%bh: block hash as a 64\-character little\-endian hex string
+%bh: block hash as a 64\-character big\-endian hex string
 %bN: block height (0 == genesis)
 %bH: block header as a hex string
 .fi
@@ -67,27 +67,7 @@ Print out the format string for each block\&. Escape codes are prefixed with
 .PP
 \fB\-\-tx,\-\-transaction\fR=\fIFORMAT\fR
 .RS 4
-Print out the format string for each transaction (in the order they are in the block)\&. All the block escape codes are valid, and the following additional ones:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-%th: transaction hash as a 64\-character little\-endian hex string
-%tv: transaction version
-%ti: transaction input count
-%to: transaction output count
-%tt: transaction locktime
-%tl: transaction length (in vbytes)
-%tw: transaction weight (in sipa)
-%tF: transaction fee paid by block (negative for coinbase reward)
-%tN: transaction number within block
-%tD: transaction bitcoin days destroyed (by block times)
-%tX: transaction as a hex string (including inputs and outputs)
-.fi
-.if n \{\
-.RE
-.\}
+Print out the format string for each transaction (in the order they are in the block)\&. All the block escape codes are valid, and the following additional ones: %tS: transaction is/is not segwit %th: transaction hash as a 64\-character big\-endian hex string %tH: transaction wtxid (big\-endian) %tv: transaction version %ti: transaction input count %to: transaction output count %tt: transaction locktime %tL: transaction total length (bytes) %tl: transaction virtual length (vbytes) %tn: transaction non segwit length (bytes) %tw: transaction weight (sipa) %tF: transaction fee paid by block (negative for coinbase reward) %tN: transaction number within block %tD: transaction bitcoin days destroyed (by block times) %tX: transaction as a hex string (including inputs and outputs)
 .RE
 .PP
 \fB\-\-input\fR=\fIFORMAT\fR
@@ -98,7 +78,8 @@ Print out the format string for each transaction input (in the order they are in
 .RS 4
 .\}
 .nf
-%ih: input hash as a 64\-character\-little\-endian hex string
+%ia: input amount
+      %ih: input hash as a 64\-character\-little\-endian hex string
 %ii: input index
 %il: input script length
 %is: input script as a hex string
@@ -107,6 +88,7 @@ Print out the format string for each transaction input (in the order they are in
 %iB: input UTXO block number (0 for coinbase)
 %iT: input UTXO transaction number (\-1 for coinbase)
 %iX: input as a hex string
+      %ip: input payment guess: same (2) or different (1) owner, or (0) unknown
 .fi
 .if n \{\
 .RE
@@ -133,9 +115,29 @@ Print out the format string for each transaction output (in the order they are i
 .\}
 .RE
 .PP
-\fB\-\-end\-hash\fR
+\fB\-\-utxo\fR=\fIFORMAT\fR
 .RS 4
-Stop iteration at this block hash\&.
+Print out the format string for each output group (in the order they are in the transaction)\&. All the block escape codes are valid, and the following additional ones:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+        %uh: utxo transaction hash
+        %us: utxo timestamp
+        %uN: utxo height
+        %uc: utxo output count
+        %uu: utxo unspent output count
+        %ud: utxo spent output count
+        %uU: utxo unspent amount
+        %uD: utxo spent amount
+        %uC: utxo bitcoin days created
+*\-\-end\-hash*::
+  Stop iteration at this block hash\&.
+.fi
+.if n \{\
+.RE
+.\}
 .RE
 .PP
 \fB\-\-start\-hash\fR
@@ -196,25 +198,33 @@ Print a brief help message, which is less useful than this manpage\&.
 .sp
 bitcoin\-iterate
 .PP
-\fBExample\ \&2.\ \&Print out the height and length of every block, separated by a space\fR
+\fBExample\ \&2.\ \&Print out the height of the first ten blocks\fR
 .sp
-bitcoin\-iterate \-\-block=\fI%bh %bl\fR
+bitcoin\-iterate \-\-block \fIBLOCK %bN\fR \-\-end 10
 .PP
-\fBExample\ \&3.\ \&Print out the block height and weight of every transaction\fR
+\fBExample\ \&3.\ \&Print out the height of the next ten blocks using start flag\fR
 .sp
-bitcoin\-iterate \-\-tx=\fIheight=%bh length=%tw\fR
+\-\-block \fI%bN\fR \-\-end 20 \-\-start 10
 .PP
-\fBExample\ \&4.\ \&Print out the length of every scriptSig (input script)\fR
+\fBExample\ \&4.\ \&Print out all block data for first ten blocks\fR
+.sp
+bitcoin\-iterate \-\-block \fILENGTH %bl VERSION %bv PREV HASH %bp MERKLE %bm TIMESTAMP %bs TARGET %bt NONCE %bn TX COUNT %bc HASH %bh HEIGHT %bN HEADER %bH\fR \-\-end 10
+.PP
+\fBExample\ \&5.\ \&Print out the length of every scriptSig (input script)\fR
 .sp
 bitcoin\-iterate \-\-input=%il
 .PP
-\fBExample\ \&5.\ \&Print out the length of every scriptPubKey (output script)\&.\fR
+\fBExample\ \&6.\ \&Print out the length of every scriptPubKey (output script).\fR
 .sp
 bitcoin\-iterate \-\-output=%ol
 .PP
-\fBExample\ \&6.\ \&Print out <block number>,<transaction hash>,<script> for each output\fR
+\fBExample\ \&7.\ \&Print out <block number>,<transaction hash>,<script> for each output\fR
 .sp
 bitcoin\-iterate \-\-output=%bn,%th,%os
+.PP
+\fBExample\ \&8.\ \&Print out <block number>,<transaction hash>,<is_segwit> for seven blocks\fR
+.sp
+bitcoin\-iterate \-\-transaction \fIBLOCK %bN HASH %th SEGWIT %tS\fR \-\-start 481820 \-\-end 481827 | grep \fISEGWIT 1\fR
 .SH "NOTES"
 .sp
 Use of \fB%tF\fR, \fB%iB\fR, \fB%iT\fR, \fB%ia\fR or \fB%ip\fR significantly slows iteration, as this requires \fBbitcoin\-iterate\fR to track unspent outputs\&.
