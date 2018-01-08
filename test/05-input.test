@@ -1,1 +1,3 @@
---input '%ia %ih %ii %il %is %iN %iX %iB %iT %ip' --end 10
+--input 'AMOUNT %ia HASH %ih INDEX %ii SCRIPT LEN %il SCRIPT HEX %is NUM INPUTS %iN 
+ HEX INPUT %iX UTXO BLOCK NUM %iB UTXO TRANSACTION NUM %iT GUESS %ip
+ ' --end 10

@@ -1,1 +1,1 @@
---utxo '%uh %us %uN %uc %uu %ud %uU %uD %uC' --end 10 --utxo-period 1
+--utxo 'TXHASH %uh TIMESTAMP %us UTXO HEIGHT %uN NUM OUTS %uc NUM UNSPENT %uu NUM SPENT %ud UNSPENT AMOUNT %uU SPENT AMOUNT %uD BDC %uC' --end 10 --utxo-period 1

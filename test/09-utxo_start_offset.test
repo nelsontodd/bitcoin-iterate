@@ -1,1 +1,3 @@
---utxo '%uh %us %uN %uc %uu %ud %uU %uD %uC' --start 40 --end 41 --utxo-period 1
+--utxo 'TXHASH %uh TIMESTAMP %us UTXO HEIGHT %uN NUM OUTS %uc NUM UNSPENT %uu 
+NUM SPENT %ud UNSPENT AMOUNT %uU SPENT AMOUNT %uD BDC %uC
+' --start 4800 --end 5000 | grep -C 2 a3 | grep -C 1 421

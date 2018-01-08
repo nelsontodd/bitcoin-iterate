@@ -1,1 +1,1 @@
---transaction '%tS' --start 481820 --end 481827
+--transaction 'BLOCK %bN HASH %th SEGWIT %tS' --start 481820 --end 481827 | grep 'SEGWIT 1'

@@ -1,1 +1,3 @@
---block '%bl %bv %bp %bm %bs %bt %bn %bc %bh %bN %bH' --end 10
+--block 'LENGTH %bl VERSION %bv PREV HASH %bp MERKLE %bm TIMESTAMP %bs TARGET %bt
+NONCE %bn TX COUNT %bc HASH %bh HEIGHT %bN HEADER %bH
+' --end 10
