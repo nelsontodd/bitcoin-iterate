@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: bitcoin-iterate
 .\"    Author: [see the "AUTHOR" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 01/08/2018
 .\"    Manual: \ \&
 .\"    Source: \ \&
@@ -79,7 +79,7 @@ Print out the format string for each transaction input (in the order they are in
 .\}
 .nf
 %ia: input amount
-      %ih: input hash as a 64\-character\-little\-endian hex string
+%ih: input hash as a 64\-character\-little\-endian hex string
 %ii: input index
 %il: input script length
 %is: input script as a hex string
@@ -88,7 +88,7 @@ Print out the format string for each transaction input (in the order they are in
 %iB: input UTXO block number (0 for coinbase)
 %iT: input UTXO transaction number (\-1 for coinbase)
 %iX: input as a hex string
-      %ip: input payment guess: same (2) or different (1) owner, or (0) unknown
+%ip: input payment guess: same (2) or different (1) owner, or (0) unknown
 .fi
 .if n \{\
 .RE
@@ -123,21 +123,24 @@ Print out the format string for each output group (in the order they are in the 
 .RS 4
 .\}
 .nf
-        %uh: utxo transaction hash
-        %us: utxo timestamp
-        %uN: utxo height
-        %uc: utxo output count
-        %uu: utxo unspent output count
-        %ud: utxo spent output count
-        %uU: utxo unspent amount
-        %uD: utxo spent amount
-        %uC: utxo bitcoin days created
-*\-\-end\-hash*::
-  Stop iteration at this block hash\&.
+%uh: utxo transaction hash
+%us: utxo timestamp
+%uN: utxo height
+%uc: utxo output count
+%uu: utxo unspent output count
+%ud: utxo spent output count
+%uU: utxo unspent amount
+%uD: utxo spent amount
+%uC: utxo bitcoin days created
 .fi
 .if n \{\
 .RE
 .\}
+.RE
+.PP
+\fB\-\-end\-hash\fR
+.RS 4
+Stop iteration at this block hash\&.
 .RE
 .PP
 \fB\-\-start\-hash\fR
@@ -214,7 +217,7 @@ bitcoin\-iterate \-\-block \fILENGTH %bl VERSION %bv PREV HASH %bp MERKLE %bm TI
 .sp
 bitcoin\-iterate \-\-input=%il
 .PP
-\fBExample\ \&6.\ \&Print out the length of every scriptPubKey (output script).\fR
+\fBExample\ \&6.\ \&Print out the length of every scriptPubKey (output script)\&.\fR
 .sp
 bitcoin\-iterate \-\-output=%ol
 .PP

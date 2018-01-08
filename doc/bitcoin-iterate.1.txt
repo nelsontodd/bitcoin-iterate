@@ -49,15 +49,15 @@ OPTIONS
   following additional ones:
   %tS: transaction is/is not segwit
   %th: transaction hash as a 64-character big-endian hex string
-	%tH: transaction wtxid (big-endian)
+  %tH: transaction wtxid (big-endian)
   %tv: transaction version
   %ti: transaction input count
   %to: transaction output count
   %tt: transaction locktime
-	%tL: transaction total length (bytes)
+  %tL: transaction total length (bytes)
   %tl: transaction virtual length (vbytes)
-	%tn: transaction non segwit length (bytes)
-	%tw: transaction weight (sipa)
+  %tn: transaction non segwit length (bytes)
+  %tw: transaction weight (sipa)
   %tF: transaction fee paid by block (negative for coinbase reward)
   %tN: transaction number within block
   %tD: transaction bitcoin days destroyed (by block times)
@@ -69,7 +69,7 @@ OPTIONS
   codes are valid, and the following additional ones:
 
   %ia: input amount
-	%ih: input hash as a 64-character-little-endian hex string
+  %ih: input hash as a 64-character-little-endian hex string
   %ii: input index
   %il: input script length
   %is: input script as a hex string
@@ -78,7 +78,7 @@ OPTIONS
   %iB: input UTXO block number (0 for coinbase)
   %iT: input UTXO transaction number (-1 for coinbase)
   %iX: input as a hex string
-	%ip: input payment guess: same (2) or different (1) owner, or (0) unknown
+  %ip: input payment guess: same (2) or different (1) owner, or (0) unknown
 
 *--output*='FORMAT'::
   Print out the format string for each transaction output (in the order
@@ -97,15 +97,16 @@ OPTIONS
   they are in the transaction).  All the block escape
   codes are valid, and the following additional ones:
 
-	%uh: utxo transaction hash
-	%us: utxo timestamp
-	%uN: utxo height
-	%uc: utxo output count
-	%uu: utxo unspent output count
-	%ud: utxo spent output count
-	%uU: utxo unspent amount
-	%uD: utxo spent amount
-	%uC: utxo bitcoin days created
+  %uh: utxo transaction hash
+  %us: utxo timestamp
+  %uN: utxo height
+  %uc: utxo output count
+  %uu: utxo unspent output count
+  %ud: utxo spent output count
+  %uU: utxo unspent amount
+  %uD: utxo spent amount
+  %uC: utxo bitcoin days created
+
 *--end-hash*::
   Stop iteration at this block hash.
 
