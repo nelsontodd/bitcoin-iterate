@@ -345,8 +345,12 @@ void print_format(const char *format,
 	printf("%"PRIu64, u->spent);
 	break;
       case 'C':
-	printf("%"PRIi64,
-		 calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
+	if (last_utxo_block) {
+	    printf("%"PRIi64,
+	    calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
+	} else {
+	    printf("0");
+	}
 	break;
       default:
 	goto bad_fmt;
