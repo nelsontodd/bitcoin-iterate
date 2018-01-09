@@ -123,12 +123,12 @@ size_t read_blockchain(tal_t *tal_ctx,
 					      block_fnames,
 					      block_map, genesis, block_end);
 	}
+	if (blockcache && !cache_existed && block_end == -1UL) {
+		write_blockcache(block_map, quiet, cachedir, blockcache);
+	}
 	if (!*genesis) {
 		errx(1, "Cache.c, Could not find a genesis block.");
 	} 
-	if (blockcache && !cache_existed) {
-		write_blockcache(block_map, quiet, cachedir, blockcache);
-	}
 	return block_count;
 }
 
