@@ -50,6 +50,7 @@ HTABLE_DEFINE_TYPE(struct utxo, keyof_utxo, hash_sha, utxohash_eq, utxo_map);
  *  @param b        -- pointer to the block containing this UTXO group.
  *  @param t        -- pointer to the transaction containing this UTXO group.
  *  @param txnum    -- index of the transaction in the containing block.
+ *  @param off    -- offset
  *
  *
  */
@@ -68,11 +69,8 @@ void add_utxo(const tal_t *tal_ctx,
  * the previous iteration) and replace them with an 
  * updated UTXO struct consisting of tx outputs.
  *
- *  @param tal_ctx  -- tal
  *  @param utxo_map -- pointer to the utxo map that this utxo will be added to.
- *  @param b        -- pointer to the block containing this UTXO group.
- *  @param t        -- pointer to the transaction containing this UTXO group.
- *  @param txnum    -- index of the transaction in the containing block.
+ *  @param tal_ctx  -- current input
  *
  *
  */
