@@ -225,9 +225,9 @@ void iterate(char *blockdir, char *cachedir,
 		 		 		utxofn(&utxo_map, b, last_utxo_block, utxo);
 	  		}
     }
-		if (!start && utxofn) {
-			last_utxo_block = b;
-		}
+    if (!start && utxofn) {
+        last_utxo_block = b;
+    }
 		
   }
 }
