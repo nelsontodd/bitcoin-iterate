@@ -129,31 +129,25 @@ struct input {
 };
  
 /**
- * utxo -- A group of outputs created by a single transaction.
+ * utxo -- An unspent transaction output.
  *
- * @txid: hash of the transaction which created these UTXOs
+ * @txid: the TXID of the transaction containing this UTXO.
+ * @index: index of the output within the transaction containing this UTXO.
  * @timestamp: UNIX timestamp of the transaction
  * @height: the block height in which the transaction was mined
  * @txnum: the index of the transaction within the block
- * @num_outputs: the number of outputs
- * @unspent_outputs: the number of unspent outputs (UTXOs)
- * @unspent: the total amount of Satoshis across all unspent outputs
- * @spent: the total amount of Satoshis across all spent outputs
- * @amount: array of output amounts
- * @output_types: array of guesses at output types
+ * @type: guesses at output type
+ * @o: the output corresponding to this UTXO
  * 
  */
 struct utxo {
 	u8 txid[SHA256_DIGEST_LENGTH];
+	u8 index;
 	u32 timestamp;
 	unsigned int height;
 	unsigned int txnum;
-	u32 num_outputs;
-	u32 unspent_outputs;
-        u64 unspent;
-        u64 spent;
-	u64 amount[];
-	/* Followed by a char per output for UNKNOWN/PAYMENT/CHANGE */
+	u8  type;
+	struct output o;
 };
 
 #define OP_PUSHDATA1	0x4C

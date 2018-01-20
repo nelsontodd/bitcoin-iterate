@@ -179,7 +179,6 @@ void iterate(char *blockdir, char *cachedir,
 			 b->bh.transaction_count);
     for (i = 0; i < b->bh.transaction_count; i++) {
       size_t j;
-      off_t txoff = off;
 
       read_transaction(&space, &tx[i],
 			       block_file(block_fnames, b->filenum, use_mmap), &off);
@@ -208,7 +207,7 @@ void iterate(char *blockdir, char *cachedir,
 	}
 
 	/* And add this tx's outputs to utxo */
-	add_utxo(tal_ctx, &utxo_map, b, &tx[i], i, txoff);
+	add_utxos(tal_ctx, &utxo_map, b, &tx[i], i);
       }
     }
     

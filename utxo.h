@@ -8,14 +8,24 @@
 #include "utils.h"
 
 /**
- * Return the SHA256 hash of the transaction for the given transaction
- * output group ("UTXO").
+ * This function is used to map UTXO structs to keys in the utxo_map.
  *
- * This function is used to match UTXO structs to keys in the utxo_map.
- *
- *  @param utxo -- pointer to a UTXO struct
+ * @param utxo -- pointer to a UTXO struct 
+ * @return pointer to the UTXO struct's `txid` member
+ * 
  */
 const u8 *keyof_utxo(const struct utxo *utxo);
+
+/**
+ * This function is used to map UTXO structs keys to hash values
+ * utxo_map.
+ *
+ * Reads the contents of the transaction TXID as well as the output
+ * index (which are laid out sequentially in the `utxo` struct).
+ *
+ *  @param key -- pointer to a UTXO's key (its `txid` member)
+ */
+size_t hashof_utxo(const u8 *key);
 
 /**
  * Does the given UTXO match the given key/hash?
@@ -42,37 +52,29 @@ bool utxohash_eq(const struct utxo *utxo, const u8 *key);
 HTABLE_DEFINE_TYPE(struct utxo, keyof_utxo, hash_sha, utxohash_eq, utxo_map);
 
 /**
- * Defines a UTXO struct from the given transaction & block, then adds it to 
- * the UTXO map utxo_map.
+ * Defines UTXO structs from the given transaction & block, then adds
+ * them to the UTXO map utxo_map.
  *
  *  @param tal_ctx  -- tal
  *  @param utxo_map -- pointer to the utxo map that this utxo will be added to.
- *  @param b        -- pointer to the block containing this UTXO group.
- *  @param t        -- pointer to the transaction containing this UTXO group.
+ *  @param b        -- pointer to the block containing creating UTXOs
+ *  @param t        -- pointer to the transaction creating these UTXOs
  *  @param txnum    -- index of the transaction in the containing block.
- *  @param off    -- offset
- *
- *
+ *  
  */
-void add_utxo(const tal_t *tal_ctx,
+void add_utxos(const tal_t *tal_ctx,
 	      struct utxo_map *utxo_map,
 	      const struct block *b,
 	      const struct transaction *t,
-	      u32 txnum, off_t off);
+	      u32 txnum);
   
 /**
- * Removes UTXO from UTXO map if it no longer has unspent_outputs, or else it
- * decrements the number of unspent_outputs. 
+ * Removes UTXO from UTXO map, indiciating it was spent by the given
+ * input.
  *
- * For context, this function is called inside of iterate in order to 'release' (delete)
- * UTXO struct composed of tx inputs (which are the outputs added to block_map in 
- * the previous iteration) and replace them with an 
- * updated UTXO struct consisting of tx outputs.
- *
- *  @param utxo_map -- pointer to the utxo map that this utxo will be added to.
- *  @param tal_ctx  -- current input
- *
- *
+ *  @param utxo_map -- pointer to the utxo map
+ *  @param i        -- pointer to the input
+ *  
  */
 void release_utxo(struct utxo_map *utxo_map, const struct input *i);
 
@@ -83,7 +85,5 @@ void release_utxo(struct utxo_map *utxo_map, const struct input *i);
  *
  */
 bool is_unspendable(const struct output *o);
-
-u8 *output_types(struct utxo *utxo);
 
 #endif /* BITCOIN_ITERATE_UTXO_H */

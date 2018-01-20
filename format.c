@@ -255,7 +255,7 @@ void print_format(const char *format,
 	/* Coinbase doesn't have valid input. */
 	if (txnum != 0) {
 	  struct utxo *utxo = utxo_map_get(utxo_map, i->txid);
-	  printf("%"PRIu64, utxo->amount[i->index]);
+	  printf("%"PRIu64, utxo->o.amount);
 	} else
 	  printf("0");
 	break;
@@ -279,7 +279,7 @@ void print_format(const char *format,
 	/* Coinbase doesn't have valid input. */
 	if (txnum != 0) {
 	  struct utxo *utxo = utxo_map_get(utxo_map, i->txid);
-	  printf("%u", output_types(utxo)[i->index]);
+	  printf("%u", utxo->type);
 	} else
 	  printf("%u", UNKNOWN_OUTPUT);
 	break;
@@ -321,33 +321,30 @@ void print_format(const char *format,
 	goto bad_fmt;
       switch (c[2]) {
       case 'h':
-    print_reversed_hash(u->txid);
+        print_reversed_hash(u->txid);
 	break;
-      case 's':
+      case 'n':
+        printf("%i", u->index);
+	break;
+      case 't':
 	printf("%u", u->timestamp);
 	break;
       case 'N':
 	printf("%u", u->height);
 	break;
-      case 'c':
-	printf("%u", u->num_outputs);
+      case 'a':
+	printf("%"PRIu64, u->o.amount);
 	break;
-      case 'u':
-	printf("%u", u->unspent_outputs);
+      case 'l':
+	printf("%"PRIu64, u->o.script_length);
 	break;
-      case 'd':
-	printf("%u", u->num_outputs - u->unspent_outputs);
-	break;
-      case 'U':
-	printf("%"PRIu64, u->unspent);
-	break;
-      case 'D':
-	printf("%"PRIu64, u->spent);
+      case 's':
+	print_hex(u->o.script, u->o.script_length);
 	break;
       case 'C':
 	if (last_utxo_block) {
 	    printf("%"PRIi64,
-	    calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
+	      calculate_bdc(u, b->bh.timestamp, last_utxo_block->bh.timestamp));
 	} else {
 	    printf("0");
 	}

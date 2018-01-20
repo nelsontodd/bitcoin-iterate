@@ -117,13 +117,12 @@ int main(int argc, char *argv[])
 		     "  %oX: output in hex\n"
 		     "Valid utxo format:\n"
 		     "  %uh: utxo transaction hash\n"
-		     "  %us: utxo timestamp\n"
+		     "  %un: utxo output index\n"
+		     "  %ut: utxo timestamp\n"
 		     "  %uN: utxo height\n"
-		     "  %uc: utxo output count\n"
-		     "  %uu: utxo unspent output count\n"
-		     "  %ud: utxo spent output count\n"
-		     "  %uU: utxo unspent amount\n"
-		     "  %uD: utxo spent amount\n"
+		     "  %ua: utxo amount\n"
+		     "  %ul: output script length\n"
+		     "  %us: output script as a hex string\n"
 		     "  %uC: utxo bitcoin days created\n",
 		     "Display help message");
   opt_register_arg("--block", opt_set_charp, NULL, &blockfmt,

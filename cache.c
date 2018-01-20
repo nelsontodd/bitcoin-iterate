@@ -168,8 +168,7 @@ bool read_utxo_cache(const tal_t *ctx,
 
 	while (bytes) {
 		struct utxo *utxo;
-		size_t size = sizeof(*utxo) + sizeof(utxo->amount[0])
-			* ((struct utxo *)contents)->num_outputs;
+		size_t size = sizeof(*utxo);
 
 		/* Truncated? */
 		if (size > bytes) {
@@ -221,8 +220,7 @@ void write_utxo_cache(const struct utxo_map *utxo_map,
 	for (utxo = utxo_map_first(utxo_map, &it);
 	     utxo;
 	     utxo = utxo_map_next(utxo_map, &it)) {
-		size_t size = sizeof(*utxo) + sizeof(utxo->amount[0])
-			* utxo->num_outputs;
+		size_t size = sizeof(*utxo);
 		if (write(fd, utxo, size) != size)
 			errx(1, "Short write to %s", file);
 		utxo_count += 1;

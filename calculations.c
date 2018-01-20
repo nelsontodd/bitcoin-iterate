@@ -23,10 +23,7 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
 	   SHA_VALS(t->input[i].txid));
     }
 
-    if (t->input[i].index >= utxo->num_outputs)
-      errx(1, "Could not calculate fees, invalid UTXO output %u for "SHA_FMT,
-	   t->input[i].index, SHA_VALS(t->input[i].txid));
-    total += utxo->amount[t->input[i].index];
+    total += utxo->o.amount;
   }
 
  sum_outputs:
@@ -76,7 +73,7 @@ s64 calculate_bdc(const struct utxo *u,
 	u32 utxo_age   = (current_timestamp - u->timestamp);
 	u64 total_over = 0;
 	u64 total_base = 0;
-	mul_and_add(&total_over, &total_base, u->unspent, (utxo_age <= interval) ? utxo_age : interval);
+	mul_and_add(&total_over, &total_base, u->o.amount, (utxo_age <= interval) ? utxo_age : interval);
 	/* we have satoshi-seconds, convert to satoshi days by dividing by */
 	/* 86400 */
 	if (total_over >= 86400/2)
@@ -104,13 +101,8 @@ s64 calculate_bdd(const struct utxo_map *utxo_map,
 			     SHA_VALS(t->input[i].txid));
 		}
 
-		if (t->input[i].index >= utxo->num_outputs)
-			errx(1, "Could not calculate days destroyed, invalid UTXO output %u for "SHA_FMT,
-			     t->input[i].index, SHA_VALS(t->input[i].txid));
-
-
 		mul_and_add(&total_over, &total_base,
-			    utxo->amount[t->input[i].index],
+			    utxo->o.amount,
 			    timestamp > utxo->timestamp ? timestamp - utxo->timestamp : 0);
 	}
 
