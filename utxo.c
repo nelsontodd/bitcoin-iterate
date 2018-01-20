@@ -1,5 +1,6 @@
 /* #include <ccan/tal/tal.h> */
 #include <ccan/err/err.h>
+#include <stdio.h>
 #include "utxo.h"
 #include "utils.h"
 #include "types.h"
@@ -80,7 +81,7 @@ static void add_utxo(const tal_t *tal_ctx,
   utxo->timestamp = b->bh.timestamp;
 	utxo->txnum     = txnum;
 	utxo->o         = t->output[index];
-	utxo->type      = types[index];
+	utxo->type      = types;
 	utxo_map_add(utxo_map, utxo);
 }
 
@@ -91,8 +92,8 @@ void add_utxos(const tal_t *tal_ctx,
 	       u32 txnum)
 {
   unsigned int i;
-	u8 *types[t->output_count];
-  guess_output_types(t, *types);
+	u8 types[t->output_count];
+  guess_output_types(t, types);
   for (i=0; i<t->output_count; i++) {
 	  add_utxo(tal_ctx, utxo_map, b, t, txnum, i, *types);
 	}
