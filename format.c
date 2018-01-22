@@ -363,6 +363,6 @@ void print_format(const char *format,
 	
  bad_fmt:
   errx(1, "Bad %s format %.3s",
-       i ? "input" : o ? "output" : t ? "transaction" : "block",
+       u ? "utxo" : i ? "input" : o ? "output" : t ? "transaction" : "block",
        c);
 }
