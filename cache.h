@@ -41,7 +41,7 @@ size_t read_blockchain(tal_t *tal_ctx,
 /**
  * Reads the UTXO cache.
  *
- *  @param tal_ctx      -- pointer to the tal context
+ *  @param ctx          -- pointer to the tal context
  *  @param quiet        -- whether to silence output
  *  @param utxo_map     -- pointer to the UTXO map to populate
  *  @param cachedir     -- the cache directory (string)

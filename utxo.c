@@ -11,7 +11,7 @@ const u8 *keyof_utxo(const struct utxo *utxo)
 size_t hashof_utxo(const u8 *key)
 {
   size_t ret;
-  memcpy(&ret, key, (SHA256_DIGEST_LENGTH + 1) * sizeof(u8));
+  memcpy(&ret, key, (SHA256_DIGEST_LENGTH + 1) * sizeof(u32));
   return ret;
 }
 
@@ -24,12 +24,6 @@ bool is_unspendable(const struct output *o)
 {
   return (o->script_length > 0 && o->script[0] == OP_RETURN);
 }
-
-/* u8 *output_types(struct utxo *utxo) */
-/* { */
-/*   return (u8 *)&utxo->amount[utxo->num_outputs]; */
-/* } */
-
 
 /* Only classify two-output txs for the moment, assuming round numbers
  * are payments.  Furthur ideas from Harold:
@@ -64,8 +58,8 @@ static void add_utxo(const tal_t *tal_ctx,
 	      const struct block *b,
 	      const struct transaction *t,
 	      u32 txnum,
-              u8 index,
-              u8 *types)
+        u32 index,
+        u8 *types)
 {
 
 	if (is_unspendable(&t->output[index])) {

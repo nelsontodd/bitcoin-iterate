@@ -17,8 +17,8 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
 		   bool is_coinbase);
   
 /**
- * calculate_bdc - Calculate Bitcoin days created by a group of
- * transaction outputs ("UTXO").
+ * calculate_bdc - Calculate Bitcoin days created by a transaction
+ * output ("UTXO").
  *
  * The age of the outputs will be the difference between the current
  * and last timestamps.

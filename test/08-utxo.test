@@ -1,1 +1,1 @@
---utxo 'TXHASH %uh INDEX %un TIMESTAMP %ut HEIGHT %uN UNSPENT AMOUNT %ua SCRIPT LENGTH %ul SCRIPT LENGTH 2 %us BDC %uC' --end 10 --utxo-period 1
+--utxo 'TXHASH %uh INDEX %un TIMESTAMP %ut HEIGHT %uN UNSPENT AMOUNT %ua SCRIPT LENGTH %ul HEX SCRIPT 2 %us BDC %uC' --end 10 --utxo-period 1

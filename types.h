@@ -115,7 +115,7 @@ struct output {
  * @index: The index of the output in the transaction this input is spending
  * @script_length: The length of this input's script
  * @script: This input's script
- * @sequence_number: This input's sequence number (not currently used)
+ * @sequence_number: This input's sequence number.
  *
  */
 struct input {
@@ -142,7 +142,7 @@ struct input {
  */
 struct utxo {
 	u8 txid[SHA256_DIGEST_LENGTH];
-	u8 index;
+	u32 index;
 	u32 timestamp;
 	unsigned int height;
 	unsigned int txnum;
