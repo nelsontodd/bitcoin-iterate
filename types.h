@@ -146,8 +146,7 @@ struct utxo {
 	u32 timestamp;
 	unsigned int height;
 	unsigned int txnum;
-	u8  type;
-	struct output o;
+  u64 amount;
 };
 
 #define OP_PUSHDATA1	0x4C

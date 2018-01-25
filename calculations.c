@@ -23,7 +23,7 @@ s64 calculate_fees(const struct utxo_map *utxo_map,
 	   SHA_VALS(t->input[i].txid));
     }
 
-    total += utxo->o.amount;
+    total += utxo->amount;
   }
 
  sum_outputs:
@@ -73,7 +73,7 @@ s64 calculate_bdc(const struct utxo *u,
 	u32 utxo_age   = (current_timestamp - u->timestamp);
 	u64 total_over = 0;
 	u64 total_base = 0;
-	mul_and_add(&total_over, &total_base, u->o.amount, (utxo_age <= interval) ? utxo_age : interval);
+	mul_and_add(&total_over, &total_base, u->amount, (utxo_age <= interval) ? utxo_age : interval);
 	/* we have satoshi-seconds, convert to satoshi days by dividing by */
 	/* 86400 */
 	if (total_over >= 86400/2)
@@ -102,7 +102,7 @@ s64 calculate_bdd(const struct utxo_map *utxo_map,
 		}
 
 		mul_and_add(&total_over, &total_base,
-			    utxo->o.amount,
+			    utxo->amount,
 			    timestamp > utxo->timestamp ? timestamp - utxo->timestamp : 0);
 	}
 

@@ -255,7 +255,7 @@ void print_format(const char *format,
 	/* Coinbase doesn't have valid input. */
 	if (txnum != 0) {
 	  struct utxo *utxo = utxo_map_get(utxo_map, i->txid);
-	  printf("%"PRIu64, utxo->o.amount);
+	  printf("%"PRIu64, utxo->amount);
 	} else
 	  printf("0");
 	break;
@@ -279,7 +279,7 @@ void print_format(const char *format,
 	/* Coinbase doesn't have valid input. */
 	if (txnum != 0) {
 	  struct utxo *utxo = utxo_map_get(utxo_map, i->txid);
-	  printf("%u", utxo->type);
+	  printf("%u", 1);
 	} else
 	  printf("%u", UNKNOWN_OUTPUT);
 	break;
@@ -333,13 +333,7 @@ void print_format(const char *format,
 	printf("%u", u->height);
 	break;
       case 'a':
-	printf("%"PRIu64, u->o.amount);
-	break;
-      case 'l':
-	printf("%"PRIu64, u->o.script_length);
-	break;
-      case 's':
-	print_hex(u->o.script, u->o.script_length);
+	printf("%"PRIu64, u->amount);
 	break;
       case 'C':
 	if (last_utxo_block) {
