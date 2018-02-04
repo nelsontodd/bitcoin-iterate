@@ -146,6 +146,7 @@ struct utxo {
 	u32 timestamp;
 	unsigned int height;
 	unsigned int txnum;
+	u8  type;
   u64 amount;
 };
 

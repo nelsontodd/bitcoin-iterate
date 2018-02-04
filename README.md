@@ -10,6 +10,13 @@ $ git clone https://github.com/unchained-capital/bitcoin-iterate
 $ cd bitcoin-iterate
 ```
 
+Install necessary libraries:
+
+```
+$ sudo apt-get install libssl-dev
+```
+
+
 Compile  the `bitcoin-iterate` program:
 
 ```

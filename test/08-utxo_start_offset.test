@@ -1,0 +1,1 @@
+--block 'AT BLOCK %bN' --utxo 'UTXO AMOUNT %ua FROM BLOCK %uN TRANSACTION %uh INDEX %un CREATING %uC BTC DAYS' --start 4800 --end 5000 | grep -C 5 'AT BLOCK'  | grep -C 2 'UTXO'

@@ -73,6 +73,7 @@ static void add_utxo(const tal_t *tal_ctx,
   utxo->timestamp = b->bh.timestamp;
 	utxo->txnum     = txnum;
 	utxo->amount    = t->output[index].amount;
+	utxo->type      = types[index];
 	utxo_map_add(utxo_map, utxo);
 }
 

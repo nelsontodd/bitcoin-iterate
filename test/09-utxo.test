@@ -1,0 +1,1 @@
+--block 'BLOCK %bN' --utxo 'UTXO AMOUNT %ua FROM BLOCK %uN TRANSACTION %uh INDEX %un CREATING %uC BTC DAYS' --end 10 --utxo-period 1

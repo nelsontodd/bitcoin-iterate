@@ -1,1 +1,0 @@
---utxo 'HASH %uh INDEX %un TIMESTAMP %ut HEIGHT %uN AMOUNT %ua LENGTH %ul HEX SCRIPT %us BDC %uC' --start 4800 --end 5000 | grep -C 2 a3 | grep -C 1 421
